@@ -2,7 +2,7 @@ const s3 = require('s3');
 const orm = require("orm");
 const _ = require('lodash');
 
-orm.connect("postgresql://andrej@localhost/yt_playlist", function (err, db) {
+orm.connect(process.env.DATABASE_URL, function (err, db) {
     if (err) throw err;
 
     let models = {};
@@ -31,9 +31,9 @@ function checkS3Contents(playlists, videos) {
 
     let client = s3.createClient({
         s3Options: {
-            accessKeyId: 'AKIAILAWDEEOUAVHCGPA',
-            secretAccessKey: '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',
-            region: "eu-west-1"
+            accessKeyId: process.env.S3_KEY_ID,
+            secretAccessKey: process.env.S3_SECRET_KEY,
+            region: process.env.S3_REGION,
         }
     });
 
