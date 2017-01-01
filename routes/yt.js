@@ -40,6 +40,7 @@ router.get('/oath2callback', function(req, res, next) {
             }, function(err) {
                 if(err) throw err;
                 req.app.ytAuth.expires_at = expiration;
+                state = state || '';
                 res.redirect('/' + state);
             });
         })
