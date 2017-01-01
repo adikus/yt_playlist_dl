@@ -1,0 +1,12 @@
+extends layout
+
+block content
+    h1 YT Playlists
+    a(href='/playlists/refresh') Refresh
+    #playlists
+        each playlist in playlists
+            #playlist
+                a(href='/playlists/' + playlist.id)
+                    h2= playlist.title
+                    p= playlist.status
+                    img(src=playlist.metadata.thumbnails.medium.url)

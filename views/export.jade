@@ -1,0 +1,16 @@
+extends layout
+
+block content
+    a(href='/playlists/' + playlist.id)= "< " + playlist.title
+    h1= playlist.metadata.album || 'Album title'
+    if playlist.coverImageUrl()
+        img(src=playlist.coverImageUrl(), width=300)
+
+    form(method='post', action='/playlists/' + playlist.id + '/export')
+            input(type='submit', value='Continue')
+
+    each item, i in items
+        pre
+            = item.exportFileName(i)
+            if item.metaGenre()
+                = " (" + item.metaGenre() + ")"

@@ -1,0 +1,85 @@
+extends layout
+
+block content
+    a(href='/playlists') < YT playlists
+    h1= playlist.title
+    a(href='/playlists/' + playlist.id + '/refresh') Refresh
+    | &nbsp;
+    a(href='/playlists/' + playlist.id + '/upload') Upload to S3
+    | &nbsp;
+    a(href='/playlists/' + playlist.id + '/convert') Convert to MP3
+    | &nbsp;
+    a(href='/playlists/' + playlist.id + '/export') Export
+    p= playlist.status
+
+    form(method='post', encType='multipart/form-data', action='/playlists/' + playlist.id + '/metadata')
+        label(for='album_' + playlist.id) Album title
+        input(type='text', id='album_' + playlist.id, name='album', value=playlist.metadata.album)
+        br
+        label(for='album_cover_' + playlist.id) Album cover
+        input(type='file', id='album_cover_' + playlist.id, name='image_file')
+        br
+        input(type='submit', value='Save')
+
+    if playlist.coverImageUrl()
+        img(src=playlist.coverImageUrl(), width=300)
+
+    br
+
+    table
+        thead
+            tr
+                th #
+                th Thumbnail
+                th Info
+                th Status
+                th Uploaded?
+                th Actions
+                th Metadata
+        tbody
+            each item, i in items
+                tr
+                    td= i+1
+                    td
+                        img(src=item.metadata.thumbnails.default.url)
+                    td
+                        strong= item.title
+                        br
+                        small= item.metadata.channelTitle
+                        br
+                        small
+                            a(href='https://www.youtube.com/watch?v=' + item.id)= item.id
+                    td= item.status
+                    td
+                        if item.metadata.s3_file && item.metadata.s3_ext
+                            a(href=item.S3Url())= item.metadata.s3_ext
+                        if item.metadata.s3_mp3_file
+                            | &nbsp;
+                            a(href=item.S3Mp3Url()) mp3
+                    td
+                        a(href='/videos/' + item.id + '/upload') (Re)Upload to S3
+                        | &nbsp;
+                        a(href='/videos/' + item.id + '/convert') (Re)Convert to mp3
+                        if !item.metadata.s3_mp3_file && !item.metadata.s3_file
+                            form(method='post', encType='multipart/form-data', action='/videos/' + item.id + '/upload-mp3')
+                                input(type='file', name='mp3_file')
+                                input(type='submit', value='Upload mp3')
+                        form(method='post', encType='multipart/form-data', action='/videos/' + item.id + '/remove')
+                            if item.status != 'removed'
+                                input(type='submit', value='Remove')
+                            else
+                                input(type='submit', value='Unremove')
+                    td
+                        form(method='post', action='/videos/' + item.id + '/metadata')
+                            - guessed = item.guessMetadata()
+                            label(for='artist_' + item.id) Artist
+                            input(type='text', id='artist_' + item.id, name='artist', value=item.metadata.artist || (guessed && guessed.artist))
+                            br
+                            label(for='title_' + item.id) Title
+                            input(type='text', id='title_' + item.id, name='title', value=item.metadata.title || (guessed && guessed.title))
+                            br
+                            label(for='genre_' + item.id) Genre
+                            input(type='text', id='genre_' + item.id, name='genre', value=item.metadata.genre || (guessed && guessed.genre))
+
+                            input.js-metadata-save(type='submit', value='Save')
+                            .js-metadata-save-message
