@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const _ = require('lodash');
 
 const YtPlaylist = require('./yt_playlist');
 
