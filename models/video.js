@@ -4,7 +4,7 @@ const path = require('path');
 const crypto = require('crypto');
 const _ = require('lodash');
 
-const metadata_guesser = require('./../services/metadata_guesser');
+const metadataGuesser = require('./../services/metadata_guesser');
 const ytDl = require('./../services/yt_dl');
 const download = require('./../services/download');
 const mp3Convert = require('./../services/mp3_convert');
@@ -29,7 +29,7 @@ exports.define = function(db, app) {
         methods: {
             guessMetadata: function() {
                 if(!this.guess){
-                    this.guess = metadata_guesser.guess(this.title, this.metadata.channelTitle);
+                    this.guess = metadataGuesser.guess(this.title, this.metadata.channelTitle);
                 }
                 return this.guess;
             },
@@ -134,7 +134,7 @@ exports.define = function(db, app) {
             },
 
             metaArtist: function() {
-                return metadata_guesser.sanitizeArtist(this.metadata.artist || this.guessMetadata().artist);
+                return metadataGuesser.sanitizeArtist(this.metadata.artist || this.guessMetadata().artist);
             },
 
             metaTitle: function() {
