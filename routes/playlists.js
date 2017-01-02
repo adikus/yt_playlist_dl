@@ -10,7 +10,7 @@ const exporter = require('./../services/exporter');
 const router = express.Router();
 
 router.get('/', function(req, res) {
-    req.models.playlist.find({}, {order: '-created_at'}, function(err, playlists) {
+    req.models.playlist.find({user_id: req.user.id}, {order: '-created_at'}, function(err, playlists) {
         if (err) throw err;
 
         res.render('playlists', {playlists: playlists});
@@ -18,7 +18,7 @@ router.get('/', function(req, res) {
 });
 
 router.get('/refresh', function(req, res) {
-    YtPlaylist.retrieve(req.app.ytAuth.access_token, function(items) {
+    YtPlaylist.retrieve(req.session.ytAuth.access_token, function(items) {
         async.each(items, function iteratee(item, callback) {
             req.models.playlist.one({id: item.id}, function(err, playlist) {
                 if (err) throw err;
@@ -46,7 +46,7 @@ router.get('/:id', function(req, res) {
 
 router.get('/:id/refresh', function(req, res) {
     Playlist.getFromDbOrApi(req, req.params.id, function(playlist) {
-        YtPlaylist.getItems(req.params.id, req.app.ytAuth.access_token, function(items) {
+        YtPlaylist.getItems(req.params.id, req.session.ytAuth.access_token, function(items) {
             async.each(items, function iteratee(item, callback) {
                 req.models.video.one({id: item.video.id}, function(err, video) {
                     if (err) throw err;

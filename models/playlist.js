@@ -8,7 +8,8 @@ exports.define = function(db, app) {
         id         : String,
         title      : String,
         status     : String,
-        metadata   : { type: 'json' }
+        metadata   : { type: 'json' },
+        user_id    : Number
     }, {
         id: 'id',
         timestamp: true,
@@ -53,7 +54,8 @@ exports.createOrUpdate = function(req, playlist, item, callback) {
         status: item.status.privacyStatus,
         title: item.snippet.title,
         metadata: {thumbnails: item.snippet.thumbnails},
-        created_at: new Date(item.snippet.publishedAt)
+        created_at: new Date(item.snippet.publishedAt),
+        user_id: req.user.id
     };
 
     if(playlist) {
@@ -87,7 +89,7 @@ exports.getFromDbOrApi = function(req, id, callback) {
         if(playlist){
             callback(playlist);
         } else {
-            YtPlaylist.get(id, req.app.ytAuth.access_token, function(item) {
+            YtPlaylist.get(id, req.session.ytAuth.access_token, function(item) {
                 self.createOrUpdate(req, null, item, function(playlist) {
                     callback(playlist);
                 });

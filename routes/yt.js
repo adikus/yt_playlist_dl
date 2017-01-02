@@ -1,7 +1,8 @@
 const express = require('express');
-const querystring = require('querystring');
-const request = require('request');
 const url = require('url');
+const querystring = require('querystring');
+
+const ytOauth = require('./../services/yt_oauth');
 
 const router = express.Router();
 
@@ -20,32 +21,9 @@ router.get('/oath', function(req, res, next) {
 
 router.get('/oath2callback', function(req, res, next) {
     let code = req.query.code;
-    let state = req.query.state;
+    let state = req.query.state || '';
 
-    request.post('https://accounts.google.com/o/oauth2/token').form({
-        code: code,
-        client_id: process.env.YT_CLIENT_ID,
-        client_secret: process.env.YT_CLIENT_SECRET,
-        redirect_uri: process.env.BASE_URL + 'yt/oath2callback',
-        grant_type: 'authorization_code'
-    }).on('response', function(response) {
-        response.on('data', function(data) {
-            req.app.ytAuth = JSON.parse(data);
-
-            let expiration = new Date();
-            expiration.setSeconds(expiration.getSeconds() + req.app.ytAuth.expires_in);
-            req.models.yt_session.create({
-                access_token: req.app.ytAuth.access_token,
-                refresh_token: req.app.ytAuth.refresh_token,
-                expires_at: expiration
-            }, function(err) {
-                if(err) throw err;
-                req.app.ytAuth.expires_at = expiration;
-                state = state || '';
-                res.redirect('/' + state);
-            });
-        })
-    });
+    ytOauth.getToken(req, res, () => res.redirect('/' + state), {code: code, grant_type: 'authorization_code'});
 });
 
 module.exports = router;

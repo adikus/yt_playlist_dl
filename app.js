@@ -10,12 +10,14 @@ const fileUpload = require('express-fileupload');
 const request = require('request');
 const passport = require('passport');
 const session = require('express-session');
+const flash = require('express-flash');
 const LocalStrategy = require('passport-local').Strategy;
 
 const index = require('./routes/index');
 const playlists = require('./routes/playlists');
 const videos = require('./routes/videos');
 const ytRouter = require('./routes/yt');
+const ytOauth = require('./services/yt_oauth');
 
 let app = express();
 app.set('env', 'development');
@@ -33,6 +35,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(fileUpload());
 app.use(session({ secret: 'verysecretsessionkey', saveUninitialized: false, resave: false, rolling: true }));
+app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -73,58 +76,25 @@ passport.use(new LocalStrategy(
     }
 ));
 
-app.use('/yt', ytRouter);
+// Routes that don't require authentication
+app.use('/', index);
 
-function checkAuthExpiration(req, res, next) {
-    if(req.app.ytAuth){
-        let expiresAt = req.app.ytAuth.expires_at;
-        let now = new Date();
-        //if(false){
-        if (now.getTime() < expiresAt.getTime()){
-            return next();
-        } else if(req.app.ytAuth.refresh_token){
-            let refresh_token = req.app.ytAuth.refresh_token;
-            return request.post('https://accounts.google.com/o/oauth2/token').form({
-                client_id: process.env.YT_CLIENT_ID,
-                client_secret: process.env.YT_CLIENT_SECRET,
-                grant_type: 'refresh_token',
-                refresh_token: refresh_token
-            }).on('response', function(response) {
-                response.on('data', function(data) {
-                    req.app.ytAuth = JSON.parse(data);
-
-                    let expiration = new Date();
-                    expiration.setSeconds(expiration.getSeconds() + req.app.ytAuth.expires_in);
-                    req.models.yt_session.create({
-                        access_token: req.app.ytAuth.access_token,
-                        refresh_token: req.app.ytAuth.refresh_token || refresh_token,
-                        expires_at: expiration
-                    }, function(err) {
-                        if(err) throw err;
-                        req.app.ytAuth.expires_at = expiration;
-                        next();
-                    });
-                })
-            });
-        }
-    }
-    return res.redirect('/yt/oath?r=' + req.url.substr(1));
-}
-
-// Check YT credentials
 app.use(function(req, res, next) {
-    if(!req.app.ytAuth){
-        req.models.yt_session.one({}, {order: '-expires_at'}, function(err, session) {
-            req.app.ytAuth = session;
-            checkAuthExpiration(req, res, next);
-        });
-    }
+    if (req.isAuthenticated())
+        return next();
     else {
-        checkAuthExpiration(req, res, next);
+        req.flash('error', 'Please sign in');
+        res.redirect('/');
     }
 });
 
-app.use('/', index);
+// Routes that require authentication but don't require YT account
+app.use('/yt', ytRouter);
+
+// Check YT credentials
+app.use((req, res, next) => ytOauth.requestCheck(req, res, next));
+
+// Routes that require both authentication and YT account
 app.use('/playlists', playlists);
 app.use('/videos', videos);
 

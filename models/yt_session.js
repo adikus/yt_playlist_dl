@@ -3,6 +3,7 @@ exports.define = function(db) {
         id           : Number,
         access_token : String,
         refresh_token: String,
+        user_id      : Number,
         expires_at   : Date
     }, {
         timestamp: false
