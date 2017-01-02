@@ -13,6 +13,7 @@ const session = require('express-session');
 const flash = require('express-flash');
 const LocalStrategy = require('passport-local').Strategy;
 const LocalAPIKeyStrategy = require('passport-localapikey').Strategy;
+const cors = require('cors');
 
 const index = require('./routes/index');
 const playlists = require('./routes/playlists');
@@ -111,8 +112,8 @@ app.use('/playlists', passCheck, ytCheck, playlists);
 app.use('/videos', passCheck, ytCheck, videos);
 
 // Routes that require API key authentication
-app.use('/api/playlists', apiKeyCheck, apiPlaylists);
-app.use('/api/videos', apiKeyCheck, apiVideos);
+app.use('/api/playlists', cors(), apiKeyCheck, apiPlaylists);
+app.use('/api/videos', cors(), apiKeyCheck, apiVideos);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
