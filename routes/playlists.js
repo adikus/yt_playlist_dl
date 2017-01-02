@@ -12,8 +12,7 @@ const router = express.Router();
 router.get('/', function(req, res) {
     req.models.playlist.find({user_id: req.user.id}, {order: '-created_at'}, function(err, playlists) {
         if (err) throw err;
-
-        res.render('playlists', {playlists: playlists});
+        res.render('playlists', {playlists: playlists, user: req.user});
     });
 });
 

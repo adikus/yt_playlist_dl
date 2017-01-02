@@ -4,7 +4,8 @@ exports.define = function(db) {
     return db.define("users", {
         id: Number,
         username: { type : "text" },
-        password: { type : "text" }
+        password: { type : "text" },
+        api_key: { type : "text" }
     }, {
         id: 'id',
         timestamp: false,

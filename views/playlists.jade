@@ -2,6 +2,7 @@ extends layout
 
 block content
     h1 YT Playlists
+
     a(href='/playlists/refresh') Refresh
     #playlists
         each playlist in playlists
@@ -10,3 +11,8 @@ block content
                     h2= playlist.title
                     p= playlist.status
                     img(src=playlist.metadata.thumbnails.medium.url)
+
+    br
+    br
+    b Your API key:
+    = user.api_key
