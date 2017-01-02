@@ -1,13 +1,13 @@
 const request = require('request');
 const _ = require('lodash');
 
-const yt_video = require('./yt_video');
+const ytVideo = require('./yt_video');
 
-const yt_api = 'https://www.googleapis.com/youtube/v3';
+const ytApiUrl = 'https://www.googleapis.com/youtube/v3';
 
 exports.search = function(token, qs, callback) {
     request.get({
-        url: yt_api + '/playlists',
+        url: ytApiUrl + '/playlists',
         qs: qs,
         auth: {
             bearer: token
@@ -44,7 +44,7 @@ exports.getItemsPage = function(id, pageToken, previousPageItems, token, callbac
     let self = this;
 
     request.get({
-        url: yt_api + '/playlistItems',
+        url: ytApiUrl + '/playlistItems',
         qs: {
             part: 'id,snippet,contentDetails',
             maxResults: 50,
@@ -64,14 +64,14 @@ exports.getItemsPage = function(id, pageToken, previousPageItems, token, callbac
             id: videoIds.join(','),
             maxResults: 50
         };
-        yt_video.search(token, qs, function(videos){
+        ytVideo.search(token, qs, function(videos){
             let videoObject = _(_(videos).map(function(video) { return [video.id, video]; })).fromPairs().value();
             _(items).each(function(item) { item.video = videoObject[item.contentDetails.videoId]; });
             previousPageItems.push.apply(previousPageItems, items);
             if(payload.nextPageToken){
-                self.getItemsPage(id, payload.nextPageToken, previousPageItems, token, callback)
+                self.getItemsPage(id, payload.nextPageToken, previousPageItems, token, callback);
             } else {
-                callback(previousPageItems)
+                callback(previousPageItems);
             }
         });
     });
