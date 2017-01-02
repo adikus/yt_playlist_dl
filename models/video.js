@@ -130,7 +130,7 @@ exports.define = function(db, app) {
 
             S3Mp3Url: function() {
                 let pid = this.metadata.s3_playlist_id || this.playlist_id;
-                return this.metadata.s3_mp3_file && this.app.s3Bucket.url('playlists/' + pid + '/mp33/' + this.metadata.s3_mp3_file);
+                return this.metadata.s3_mp3_file && this.app.s3Bucket.url('playlists/' + pid + '/mp3/' + this.metadata.s3_mp3_file);
             },
 
             metaArtist: function() {
