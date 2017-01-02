@@ -19,6 +19,7 @@ exports.define = function(db, models, app) {
         dbtype: { type: 'date', time: true }
     });
 
+    models.user = require('./../models/user').define(db, app);
     models.video = require('./../models/video').define(db, app);
     models.playlist = require('./../models/playlist').define(db, app);
     models.yt_session = require('./../models/yt_session').define(db, app);

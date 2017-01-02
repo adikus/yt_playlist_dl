@@ -12,6 +12,7 @@ router.get('/oath', function(req, res, next) {
         response_type: 'code',
         scope: 'https://www.googleapis.com/auth/youtube.readonly',
         access_type: 'offline',
+        approval_prompt: 'force',
         state: req.query.r || ''
     });
     res.redirect('https://accounts.google.com/o/oauth2/auth?' + qs);

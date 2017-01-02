@@ -1,8 +1,16 @@
 extends layout
 
 block content
-  h1= title
-  if auth
-    a(href='/playlists') YT playlists
-  else
-    a(href='/yt/oath') Sign in to YT
+    h1= title
+    if user
+        a(href='/playlists') YT playlists
+    else
+        form(action='/login', method='post')
+            div
+                label Username
+                input(type='text', name='username', placeholder='Username')
+            div
+                label Password
+                input(type='password', name='password', placeholder='Password')
+            div
+                input(type='submit', value='Sign in')
