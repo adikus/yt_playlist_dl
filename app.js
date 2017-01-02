@@ -12,10 +12,13 @@ const passport = require('passport');
 const session = require('express-session');
 const flash = require('express-flash');
 const LocalStrategy = require('passport-local').Strategy;
+const LocalAPIKeyStrategy = require('passport-localapikey').Strategy;
 
 const index = require('./routes/index');
 const playlists = require('./routes/playlists');
 const videos = require('./routes/videos');
+const apiPlaylists = require('./routes/api_playlists');
+const apiVideos = require('./routes/api_videos');
 const ytRouter = require('./routes/yt');
 const ytOauth = require('./services/yt_oauth');
 
@@ -76,27 +79,40 @@ passport.use(new LocalStrategy(
     }
 ));
 
+passport.use(new LocalAPIKeyStrategy(
+    function(api_key, done) {
+        app.models.user.one({ api_key: api_key }, function (err, user) {
+            if (err) { return done(err); }
+            if (!user) { return done(null, false); }
+            return done(null, user);
+        });
+    }
+));
+
 // Routes that don't require authentication
 app.use('/', index);
 
-app.use(function(req, res, next) {
+let passCheck = (req, res, next) => {
     if (req.isAuthenticated())
         return next();
     else {
         req.flash('error', 'Please sign in');
         res.redirect('/');
     }
-});
+};
+let ytCheck = (req, res, next) => ytOauth.requestCheck(req, res, next);
+let apiKeyCheck = passport.authenticate('localapikey', { session: false });
 
 // Routes that require authentication but don't require YT account
-app.use('/yt', ytRouter);
-
-// Check YT credentials
-app.use((req, res, next) => ytOauth.requestCheck(req, res, next));
+app.use('/yt', passCheck, ytRouter);
 
 // Routes that require both authentication and YT account
-app.use('/playlists', playlists);
-app.use('/videos', videos);
+app.use('/playlists', passCheck, ytCheck, playlists);
+app.use('/videos', passCheck, ytCheck, videos);
+
+// Routes that require API key authentication
+app.use('/api/playlists', apiKeyCheck, apiPlaylists);
+app.use('/api/videos', apiKeyCheck, apiVideos);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

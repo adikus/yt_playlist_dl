@@ -24,3 +24,4 @@ exports.define = function(db, models, app) {
     models.playlist = require('./../models/playlist').define(db, app);
     models.yt_session = require('./../models/yt_session').define(db, app);
 };
+
