@@ -47,10 +47,12 @@ router.get('/:id/refresh', function(req, res) {
     Playlist.getFromDbOrApi(req, req.params.id, function(playlist) {
         YtPlaylist.getItems(req.params.id, req.session.ytAuth.access_token, function(items) {
             async.each(items, function iteratee(item, callback) {
-                req.models.video.one({id: item.video.id}, function(err, video) {
-                    if (err) throw err;
-                    Video.createOrUpdate(req, playlist.id, video, item, callback);
-                });
+                if(item.video){
+                    req.models.video.one({id: item.video.id}, function(err, video) {
+                        if (err) throw err;
+                        Video.createOrUpdate(req, playlist.id, video, item, callback);
+                    });
+                }
             }, function done() {
                 req.models.video.find({playlist_id: playlist.id}, function(err, videos) {
                     if (err) throw err;

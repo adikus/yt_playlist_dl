@@ -63,6 +63,7 @@ router.post('/:id/remove', function(req, res) {
             video.status = 'removed';
         } else {
             video.status = video.metadata.yt_status;
+            if(video.status == 'removed' || !video.status)video.status = 'public';
         }
 
         video.save(function(err) {
