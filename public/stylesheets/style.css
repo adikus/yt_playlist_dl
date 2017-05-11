@@ -6,3 +6,16 @@ body {
 a {
   color: #00B7FF;
 }
+
+.metadata-cell.no-metadata label {
+  color: #F00;
+}
+
+.metadata-cell .submit.submitting {
+  display: none;
+}
+
+form.export pre input{
+  width: 30px;
+  margin-right: 10px;
+}

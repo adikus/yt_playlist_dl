@@ -145,8 +145,12 @@ exports.define = function(db, app) {
                 return this.metadata.genre || this.guessMetadata().genre;
             },
 
-            exportFileName: function(i) {
-                return sanitize(('00' + i).slice(-3) + " " + this.metaArtist() + " - " + this.metaTitle() + ".mp3");
+            exportFileName: function() {
+                return sanitize(this.metaArtist() + " - " + this.metaTitle() + ".mp3");
+            },
+
+            exportFileNameN: function(i) {
+                return sanitize(('00' + i).slice(-3)) + " " + this.exportFileName();
             }
         }
     });

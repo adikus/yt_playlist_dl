@@ -12,7 +12,7 @@ const router = express.Router();
 router.get('/', function(req, res) {
     req.models.playlist.find({user_id: req.user.id}, {order: '-created_at'}, function(err, playlists) {
         if (err) throw err;
-        res.render('playlists', {playlists: playlists, user: req.user});
+        res.render('playlists', {title: 'Your YT playlists', playlists: playlists, user: req.user});
     });
 });
 
@@ -37,7 +37,7 @@ router.get('/:id', function(req, res) {
             if (items.length == 0){
                 res.redirect('/playlists/' + req.params.id + '/refresh');
             } else {
-                res.render('playlist', {playlist: playlist, items: items});
+                res.render('playlist', {title: playlist.title, playlist: playlist, items: items});
             }
         });
     });
@@ -124,7 +124,7 @@ router.get('/:id/export', function(req, res) {
         req.models.video.find({playlist_id: playlist.id, status: 'public'}, {order: 'position'}, function(err, items) {
             if (err) throw err;
 
-            res.render('export', {playlist: playlist, items: items});
+            res.render('export', {title: 'Export ' + playlist.title, playlist: playlist, items: items});
         });
     });
 });
@@ -134,12 +134,17 @@ router.post('/:id/export', function(req, res) {
         req.models.video.find({playlist_id: playlist.id, status: 'public'}, {order: 'position'}, function(err, items) {
             if (err) throw err;
 
-            exporter.exportAlbum(playlist, items, function(err) {
+            exporter.exportAlbum(playlist, items, req.body.index, function(err, stream) {
                 if(err) throw err;
+
+                res.writeHead(200, {
+                    'Content-Type': 'application/zip',
+                    'Content-disposition': 'attachment;filename=' + playlist.metadata.album + '.zip'
+                });
+                stream.pipe(res);
+
                 console.log('Export done.');
             });
-
-            res.redirect('/playlists/' + playlist.id);
         });
     });
 });

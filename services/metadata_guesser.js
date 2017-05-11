@@ -11,7 +11,8 @@ const uploader_formats = {
     'audiomachine': {regex: /^(audiomachine) - ([^-]+)$/, values: ['artist', 'title']},
     'ThePrimeCronus II': {regex: /^([^-]+) - ([^-]+) \/\/ (.+)$/, values: ['artist', 'title', 'genre']},
     'ThePrimeCronus II|alt': {regex: /^(?:.+) \/\/ (.+) - (.+)$/, values: ['artist', 'title']},
-    'HDSounDI': {regex: /^(?:.+) "(.+)" by (.+)$/, values: ['title', 'artist']}
+    'HDSounDI': {regex: /^(?:.+) "(.+)" by (.+)$/, values: ['title', 'artist']},
+    'Monstercat': {regex: /^(?:\[(.+)\] - )?([^\[\]-]+) - ([^\[\]-]+)(?:\s\[Monstercat(?:.+)\])?$/, values: ['genre', 'artist', 'title'] }
 };
 const artist_names = JSON.parse(fs.readFileSync('./data/artists.json', 'utf8'));
 const irregular_titles = JSON.parse(fs.readFileSync('./data/titles.json', 'utf8'));

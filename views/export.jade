@@ -6,11 +6,13 @@ block content
     if playlist.coverImageUrl()
         img(src=playlist.coverImageUrl(), width=300)
 
-    form(method='post', action='/playlists/' + playlist.id + '/export')
-            input(type='submit', value='Continue')
+    form.export(method='post', action='/playlists/' + playlist.id + '/export')
+        input(type='submit', value='Continue')
 
-    each item, i in items
-        pre
-            = item.exportFileName(i)
-            if item.metaGenre()
-                = " (" + item.metaGenre() + ")"
+        each item, i in items
+            pre
+                input.js-change-index(type='text', value=i+1, name='index[' + item.id + ']', readonly=(i > 0))
+                input.js-change-start(type='radio', name='start', value=item.position, checked=(i == 0))
+                = item.exportFileName(i)
+                if item.metaGenre()
+                    = " (" + item.metaGenre() + ")"

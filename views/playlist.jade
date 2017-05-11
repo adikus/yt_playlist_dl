@@ -72,14 +72,16 @@ block content
                     td
                         form(method='post', action='/videos/' + item.id + '/metadata')
                             - guessed = item.guessMetadata()
-                            label(for='artist_' + item.id) Artist
-                            input(type='text', id='artist_' + item.id, name='artist', value=item.metadata.artist || (guessed && guessed.artist))
-                            br
-                            label(for='title_' + item.id) Title
-                            input(type='text', id='title_' + item.id, name='title', value=item.metadata.title || (guessed && guessed.title))
-                            br
-                            label(for='genre_' + item.id) Genre
-                            input(type='text', id='genre_' + item.id, name='genre', value=item.metadata.genre || (guessed && guessed.genre))
+                            - has_metadata = item.metadata.artist && item.metadata.title
+                            span(class='metadata-cell ' + (has_metadata ? 'has-metadata' : 'no-metadata'))
+                                label(for='artist_' + item.id) Artist
+                                input(type='text', id='artist_' + item.id, name='artist', value=item.metadata.artist || (guessed && guessed.artist))
+                                br
+                                label(for='title_' + item.id) Title
+                                input(type='text', id='title_' + item.id, name='title', value=item.metadata.title || (guessed && guessed.title))
+                                br
+                                label(for='genre_' + item.id) Genre
+                                input(type='text', id='genre_' + item.id, name='genre', value=item.metadata.genre || (guessed && guessed.genre))
 
-                            input.js-metadata-save(type='submit', value='Save')
-                            .js-metadata-save-message
+                                input.submit.js-metadata-save(type='submit', value='Save')
+                                .js-metadata-save-message

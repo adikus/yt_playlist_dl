@@ -2,15 +2,22 @@ $(function() {
     $('.js-metadata-save').click(function(event) {
         event.preventDefault();
 
-        var $form = $(this).parent();
-        var metadata = {
+        let $this = $(this);
+        let $form = $(this).parents('form');
+        let metadata = {
             artist: $("[name='artist']", $form).val(),
             title: $("[name='title']", $form).val(),
             genre: $("[name='genre']", $form).val()
         };
 
+        $this.addClass('submitting');
         $.post($form.attr('action'), metadata, function(res) {
-            console.log(res);
+            if(res.status == 'ok') {
+                $this.parent().removeClass('no-metadata').addClass('has-metadata');
+                $this.val('Saved');
+            }
+            $this.removeClass('submitting');
+
         }, 'json');
     });
 });
