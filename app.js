@@ -97,6 +97,7 @@ let passCheck = (req, res, next) => {
     if (req.isAuthenticated())
         return next();
     else {
+        req.session.returnTo = req.originalUrl;
         req.flash('error', 'Please sign in');
         res.redirect('/');
     }

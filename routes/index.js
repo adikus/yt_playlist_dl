@@ -7,10 +7,15 @@ router.get('/', function(req, res, next) {
     res.render('index', { title: 'YT Playlists DL', user: req.user });
 });
 
-router.post('/login', passport.authenticate('local', {
-    successRedirect: '/playlists',
-    failureRedirect: '/',
-    failureFlash: true
-}));
+router.post(
+    '/login',
+    passport.authenticate('local', {
+        failureRedirect: '/',
+        failureFlash: true
+    }), function(req, res) {
+        res.redirect(req.session.returnTo || '/playlists');
+        delete req.session.returnTo;
+    }
+);
 
 module.exports = router;
