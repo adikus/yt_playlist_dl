@@ -23,6 +23,7 @@ exports.exportAlbum = function(playlist, items, indexes, callback) {
         callback(null, stream);
         stream.on('finish', function () {
             // Cleanup
+            // FIXME: seems that the event doesn't fire
             console.log('Cleaning up files.');
             _(files).each(file => fs.unlink(file, () => {} ));
         });

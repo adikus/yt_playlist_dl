@@ -139,7 +139,7 @@ router.post('/:id/export', function(req, res) {
 
                 res.writeHead(200, {
                     'Content-Type': 'application/zip',
-                    'Content-disposition': 'attachment;filename=' + playlist.metadata.album + '.zip'
+                    'Content-disposition': 'attachment;filename="' + playlist.metadata.album + '.zip"'
                 });
                 stream.pipe(res);
 

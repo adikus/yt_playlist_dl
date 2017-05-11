@@ -134,15 +134,15 @@ exports.define = function(db, app) {
             },
 
             metaArtist: function() {
-                return metadataGuesser.sanitizeArtist(this.metadata.artist || this.guessMetadata().artist);
+                return metadataGuesser.sanitizeArtist(this.metadata.artist || this.guessMetadata().artist) || '';
             },
 
             metaTitle: function() {
-                return this.metadata.title || this.guessMetadata().title;
+                return this.metadata.title || this.guessMetadata().title || '';
             },
 
             metaGenre: function() {
-                return this.metadata.genre || this.guessMetadata().genre;
+                return this.metadata.genre || this.guessMetadata().genre || '';
             },
 
             exportFileName: function() {
