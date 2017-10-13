@@ -12,6 +12,12 @@ const uploader_formats = {
     'ThePrimeCronus II': {regex: /^([^-]+) - ([^-]+) \/\/ (.+)$/, values: ['artist', 'title', 'genre']},
     'ThePrimeCronus II|alt': {regex: /^(?:.+) \/\/ (.+) - (.+)$/, values: ['artist', 'title']},
     'HDSounDI': {regex: /^(?:.+) "(.+)" by (.+)$/, values: ['title', 'artist']},
+    'Firefly Music': {regex: /^([^-]+) - ([^-]+)$/, values: ['artist', 'title']},
+    'Soundify.': {regex: /^([^-]+) - ([^-]+)$/, values: ['artist', 'title']},
+    'xKito Music': {regex: /^([^-]+) - ([^-]+)$/, values: ['artist', 'title']},
+    'Proximity': {regex: /^([^-]+) [-–] ([^-]+?)(?:\[(?:.+)\])?$/, values: ['artist', 'title']},
+    'Funky Panda™': {regex: /^(?:([^|]+) (?:\|+) )([^\|]+) [-–] ([^-]+?)$/, values: ['genre', 'artist', 'title']},
+    'Xefox Music': {regex: /^([^-]+) - ([^-]+)$/, values: ['artist', 'title']},
     'Monstercat': {regex: /^(?:\[(.+)\] - )?([^\[\]-]+) - ([^\[\]-]+)(?:\s\[Monstercat(?:.+)\])?$/, values: ['genre', 'artist', 'title'] }
 };
 const artist_names = JSON.parse(fs.readFileSync('./data/artists.json', 'utf8'));
