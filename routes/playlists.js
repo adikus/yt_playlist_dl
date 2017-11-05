@@ -124,6 +124,8 @@ router.get('/:id/export', function(req, res) {
         req.models.video.find({playlist_id: playlist.id, status: 'public'}, {order: 'position'}, function(err, items) {
             if (err) throw err;
 
+            items = _(items).filter((item) => item.S3Mp3Url());
+
             res.render('export', {title: 'Export ' + playlist.title, playlist: playlist, items: items});
         });
     });
