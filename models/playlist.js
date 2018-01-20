@@ -9,7 +9,9 @@ exports.define = function(db, app) {
         title      : String,
         status     : String,
         metadata   : { type: 'json' },
-        user_id    : Number
+        user_id    : Number,
+        album_name : String,
+        album      : String
     }, {
         id: 'id',
         timestamp: true,

@@ -16,7 +16,9 @@ exports.define = function(db, app) {
         status     : String,
         metadata   : { type: 'json' },
         position   : Number,
-        playlist_id: String
+        playlist_id: String,
+        original_upload_id: Number,
+        mp3_upload_id: Number
     }, {
         id: 'id',
         timestamp: true,
