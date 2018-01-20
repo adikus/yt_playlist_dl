@@ -21,11 +21,11 @@ exports.up = function () {
 };
 
 exports.down = function (){
-    return this.dropIndex('playlist_videos_playlist_id_idx').then(() => {
-        this.dropIndex('playlist_videos_video_id_idx');
+    return this.dropIndex('playlist_videos', 'playlist_videos_playlist_id_idx').then(() => {
+        this.dropIndex('playlist_videos', 'playlist_videos_video_id_idx');
     }).then(() => {
-        this.dropIndex('custom_video_uploads_video_id_idx');
+        this.dropIndex('custom_video_uploads', 'custom_video_uploads_video_id_idx');
     }).then(() => {
-        this.dropIndex('custom_video_uploads_user_id_idx');
+        this.dropIndex('custom_video_uploads', 'custom_video_uploads_user_id_idx');
     });
 };

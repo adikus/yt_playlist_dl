@@ -4,6 +4,6 @@ exports.define = function(db) {
         file_type : String,
         file      : String
     }, {
-        timestamp: false
+        timestamp: true
     });
 };
