@@ -6,3 +6,4 @@ data/artists.json
 data/titles.json
 dist/
 temp/
+.env

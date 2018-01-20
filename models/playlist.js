@@ -11,7 +11,7 @@ exports.define = function(db, app) {
         metadata   : { type: 'json' },
         user_id    : Number,
         album_name : String,
-        album      : String
+        album_cover: String
     }, {
         id: 'id',
         timestamp: true,
