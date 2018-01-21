@@ -25,7 +25,6 @@ orm.connect(process.env.DATABASE_URL, function (err, db) {
     }).then(() => {
         return models.video.allAsync();
     }).then((videos) => {
-        console.log(playlist_users);
         console.log("Videos found:", videos.length);
 
         return Promise.all(_(videos).map(async (video) => {
@@ -38,7 +37,10 @@ orm.connect(process.env.DATABASE_URL, function (err, db) {
                 let upload = await models.upload.oneAsync({file: file});
                 if(!upload){
                     console.log('Creating upload for video ' + video.title);
-                    upload = await models.upload.createAsync({file: file, file_type: file_type});
+                    upload = await models.upload.createAsync({file: file, file_type: file_type, created_at: video.created_at});
+                } else {
+                    upload.created_at = video.created_at;
+                    upload.saveAsync();
                 }
                 video.original_upload_id = upload.id;
             }
@@ -49,7 +51,10 @@ orm.connect(process.env.DATABASE_URL, function (err, db) {
                 let mp3_upload = await models.upload.oneAsync({file: mp3_file});
                 if(!mp3_upload){
                     console.log('Creating mp3 upload for video ' + video.title);
-                    mp3_upload = await models.upload.createAsync({file: mp3_file, file_type: 'mp3'});
+                    mp3_upload = await models.upload.createAsync({file: mp3_file, file_type: 'mp3', created_at: video.created_at});
+                } else {
+                    mp3_upload.created_at = video.created_at;
+                    mp3_upload.saveAsync();
                 }
                 video.mp3_upload_id = mp3_upload.id;
             }
@@ -62,8 +67,12 @@ orm.connect(process.env.DATABASE_URL, function (err, db) {
                 await models.playlist_video.createAsync({
                     playlist_id: video.playlist_id,
                     video_id: video.id,
-                    user_id: playlist_users[video.playlist_id]
+                    user_id: playlist_users[video.playlist_id],
+                    created_at: video.created_at
                 });
+            } else {
+                playlist_video.created_at = video.created_at;
+                playlist_video.saveAsync();
             }
         }).value());
     }).then(() => {
