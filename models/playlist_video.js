@@ -3,7 +3,8 @@ exports.define = function(db) {
         id          : Number,
         playlist_id : String,
         video_id    : String,
-        user_id     : Number
+        user_id     : Number,
+        position    : Number
     }, {
         timestamp: true
     });
