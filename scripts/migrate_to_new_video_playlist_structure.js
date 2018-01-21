@@ -68,9 +68,11 @@ orm.connect(process.env.DATABASE_URL, function (err, db) {
                     playlist_id: video.playlist_id,
                     video_id: video.id,
                     user_id: playlist_users[video.playlist_id],
-                    created_at: video.created_at
+                    created_at: video.created_at,
+                    position: video.position
                 });
             } else {
+                playlist_video.position = video.position;
                 playlist_video.created_at = video.created_at;
                 playlist_video.saveAsync();
             }
