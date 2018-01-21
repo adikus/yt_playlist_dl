@@ -8,6 +8,7 @@ const metadataGuesser = require('./../services/metadata_guesser');
 const ytDl = require('./../services/yt_dl');
 const download = require('./../services/download');
 const mp3Convert = require('./../services/mp3_convert');
+const Upload = require('./upload');
 
 exports.define = function(db, app) {
     return db.define("videos", {
@@ -29,6 +30,10 @@ exports.define = function(db, app) {
             }
         },
         methods: {
+            getUpload: async function() {
+                return this.app.models.upload.oneAsync({id: this.original_upload_id});
+            },
+
             guessMetadata: function() {
                 if(!this.guess){
                     this.guess = metadataGuesser.guess(this.title, this.metadata.channelTitle);
@@ -36,29 +41,15 @@ exports.define = function(db, app) {
                 return this.guess;
             },
 
-            uploadToS3: function(callback) {
-                let self = this;
-
-                console.log('Resolving ' + this.id + '(' + this.title + ')');
-                ytDl.get(this.id)
-                    .then( audioUrlObject => self.uploadToS3From(audioUrlObject, callback) )
-                    .catch( err => console.log('Failed to download ' + self.id + '(' + self.title + ')', err) );
-            },
-
-            uploadToS3From: function(audioUrlObject, callback) {
-                let self = this;
-
-                console.log('Downloading ' + this.id + '(' + this.title + ')');
-                download.run(audioUrlObject.url).then( file => {
-                    console.log('Uploading ' + self.id + '(' + self.title + ')');
-                    let name = path.parse(file.path).name;
-                    return self.app.s3Bucket.uploadFileFromFS('playlists/' + self.playlist_id + '/' + name, file.path, 'audio/' + audioUrlObject.ext);
-                }).then( key => {
-                    let name = path.parse(key).name;
-                    console.log('Uploaded ' + self.id + ' as ' + key);
-                    fs.unlink('./temp/' + name, () => {} );
-                    return self.saveAudioMetadata(name, audioUrlObject.ext, audioUrlObject.format_id, callback);
-                });
+            uploadToS3: async function(callback) {
+                console.log('Resolving ' + this.id + ' (' + this.title + ')');
+                let audioUrlObject = await ytDl.get(this.id);
+                console.log('Uploading ' + this.id + ' (' + this.title + ')');
+                let [upload, format_id] = await Upload.createFromUrl(this.app, audioUrlObject);
+                this.original_upload_id = upload.id;
+                this.metadata = _(this.metadata).merge({format_id});
+                this.markAsDirty('metadata');
+                await this.saveAsync();
             },
 
             convertAndUploadToS3: function(callback) {
@@ -109,15 +100,6 @@ exports.define = function(db, app) {
                 });
             },
 
-            saveAudioMetadata: function(name, ext, format_id, callback) {
-                this.saveMetadata({
-                    s3_file: name,
-                    s3_ext: ext,
-                    s3_format: format_id,
-                    s3_playlist_id: this.playlist_id
-                }, callback);
-            },
-
             saveMp3Metadata: function(name, callback) {
                 this.saveMetadata({
                     s3_mp3_file: name,
@@ -125,16 +107,7 @@ exports.define = function(db, app) {
                 }, callback);
             },
 
-            S3Url: function() {
-                let pid = this.metadata.s3_playlist_id || this.playlist_id;
-                return this.metadata.s3_file && this.app.s3Bucket.url('playlists/' + pid + '/' + this.metadata.s3_file);
-            },
-
-            S3Mp3Url: function() {
-                let pid = this.metadata.s3_playlist_id || this.playlist_id;
-                return this.metadata.s3_mp3_file && this.app.s3Bucket.url('playlists/' + pid + '/mp3/' + this.metadata.s3_mp3_file);
-            },
-
+            // TODO: These should be defined on playlist_video
             metaArtist: function() {
                 return metadataGuesser.sanitizeArtist(this.metadata.artist || this.guessMetadata().artist) || '';
             },
@@ -159,20 +132,18 @@ exports.define = function(db, app) {
 };
 
 
-exports.createOrUpdate = function(req, playlistId, video, item, callback) {
+exports.createOrUpdate = async function(req, video, item, callback) {
     let params = {
         id: item.video.id,
-        status: item.video.status.privacyStatus,
         title: item.video.snippet.title,
         metadata: {thumbnails: item.video.snippet.thumbnails, channelTitle: item.video.snippet.channelTitle},
-        playlist_id: playlistId,
-        position: item.snippet.position,
-        created_at: new Date(item.video.snippet.publishedAt)
+        created_at: new Date(item.video.snippet.publishedAt),
+        status: 'deprecated'
     };
 
     if(video) {
         _(params).each(function(value, key) {
-            if(key != 'metadata') {
+            if(key !== 'metadata') {
                 video[key] = value;
             }else{
                 video.metadata = _(video.metadata).merge(value);
@@ -180,14 +151,20 @@ exports.createOrUpdate = function(req, playlistId, video, item, callback) {
             }
         });
 
-        video.save(function(err, record) {
-            if (err) throw err;
-            callback(record);
-        })
+        video = await video.saveAsync();
     }else{
-        req.models.video.create(params, function(err, record) {
-            if (err) throw err;
-            callback(record);
-        });
+        video = await req.models.video.createAsync(params);
     }
+    if(callback) {
+        callback(video);
+    }
+    return video;
+};
+
+exports.preload = async function(req, videos, key, name, model_name) {
+    let ids = _(videos).map(key).compact().value();
+    let instances = await req.models[model_name].findAsync({id: ids});
+    _(videos).each((video) => {
+        video[name] = _(instances).find({id: video[key]});
+    });
 };

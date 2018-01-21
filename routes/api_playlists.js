@@ -13,14 +13,10 @@ router.get('/', wrap(async function(req, res) {
 
 router.get('/:id', wrap(async (req, res) => {
     let playlist = await Playlist.getFromDbOrApi(req, req.params.id);
-    let playlistVideos = await req.models.playlist_video.findAsync({playlist_id: req.params.id, user_id: req.user.id}, {order: 'position'});
-    let videoIds = _(playlistVideos).map(playlistVideo => playlistVideo.video_id).value();
-    let videos = await req.models.video.findAsync({id: videoIds});
-    videos = _(videos).sortBy((video) => {
-        let playlistVideo = _(playlistVideos).find({video_id: video.id});
-        video.position = playlistVideo.position;
-        return video.position;
-    }).value();
+    if(playlist.user_id !== req.user.id) {
+        return res.send(401);
+    }
+    let videos = await playlist.getVideos();
 
     res.json({playlist: playlist, items: videos});
 }));

@@ -91,5 +91,12 @@ exports.getItemsPage = function(id, pageToken, previousPageItems, token, callbac
 };
 
 exports.getItems = function(id, token, callback) {
-    this.getItemsPage(id, null, [], token, callback);
+    return new Promise((resolve) => {
+        this.getItemsPage(id, null, [], token, (result) => {
+            if(callback){
+                callback(result);
+            }
+            resolve(result);
+        });
+    });
 };

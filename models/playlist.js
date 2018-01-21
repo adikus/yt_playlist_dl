@@ -22,6 +22,19 @@ exports.define = function(db, app) {
             }
         },
         methods: {
+            getVideos: async function() {
+                let playlistVideos = await this.app.models.playlist_video.findAsync({playlist_id: this.id, user_id: this.user_id}, {order: 'position'});
+                let videoIds = _(playlistVideos).map(playlistVideo => playlistVideo.video_id).value();
+                let videos = await this.app.models.video.findAsync({id: videoIds});
+                videos = _(videos).sortBy((video) => {
+                    let playlistVideo = _(playlistVideos).find({video_id: video.id});
+                    video.playlistVideo = playlistVideo;
+                    video.position = playlistVideo.position;
+                    return video.position;
+                }).value();
+                return videos;
+            },
+
             uploadAlbumCover: function(imageFile, callback) {
                 let self = this;
 
@@ -72,7 +85,7 @@ exports.createOrUpdate = async function(req, playlist, item, callback) {
 
         playlist = await playlist.saveAsync();
     }else{
-        playlist = await req.models.playlist.create(params);
+        playlist = await req.models.playlist.createAsync(params);
     }
     if(callback) {
         callback(playlist);

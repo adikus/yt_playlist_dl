@@ -49,23 +49,23 @@ block content
                         br
                         small
                             a(href='https://www.youtube.com/watch?v=' + item.id)= item.id
-                    td= item.status
+                    td= item.playlistVideo.status
                     td
-                        if item.metadata.s3_file && item.metadata.s3_ext
-                            a(href=item.S3Url())= item.metadata.s3_ext
-                        if item.metadata.s3_mp3_file
+                        if item.originalUpload
+                            a(href=item.originalUpload.S3Url())= item.originalUpload.file_type
+                        if item.mp3Upload
                             | &nbsp;
-                            a(href=item.S3Mp3Url()) mp3
+                            a(href=item.mp3Upload.S3Url()) mp3
                     td
                         a(href='/videos/' + item.id + '/upload') (Re)Upload to S3
                         | &nbsp;
                         a(href='/videos/' + item.id + '/convert') (Re)Convert to mp3
-                        if !item.metadata.s3_mp3_file && !item.metadata.s3_file
+                        if !item.mp3Upload
                             form(method='post', encType='multipart/form-data', action='/videos/' + item.id + '/upload-mp3')
                                 input(type='file', name='mp3_file')
                                 input(type='submit', value='Upload mp3')
                         form(method='post', encType='multipart/form-data', action='/videos/' + item.id + '/remove')
-                            if item.status != 'removed'
+                            if item.playlistVideo.status !== 'removed'
                                 input(type='submit', value='Remove')
                             else
                                 input(type='submit', value='Unremove')

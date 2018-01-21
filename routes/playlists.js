@@ -4,94 +4,105 @@ const async = require('async');
 
 const Playlist = require('./../models/playlist');
 const Video = require('./../models/video');
+const PlaylistVideo = require('./../models/playlist_video');
 const YtPlaylist = require('./../models/yt_playlist');
 const exporter = require('./../services/exporter');
+const wrap = require('./../lib/express-router-promise').wrap;
 
 const router = express.Router();
 
-router.get('/', function(req, res) {
-    req.models.playlist.find({user_id: req.user.id}, {order: '-created_at'}, function(err, playlists) {
-        if (err) throw err;
-        res.render('playlists', {title: 'Your YT playlists', playlists: playlists, user: req.user});
+router.get('/', wrap(async function(req, res) {
+    let playlists = await req.models.playlist.findAsync({user_id: req.user.id}, {order: '-created_at'});
+    res.render('playlists', {title: 'Your YT playlists', playlists: playlists, user: req.user});
+}));
+
+router.get('/refresh', wrap(async function(req, res) {
+    let ytPlasylists = await YtPlaylist.retrieve(req.session.ytAuth.access_token);
+    await new Promise((resolve) => {
+        async.eachLimit(ytPlasylists, 4, async function iteratee(item) {
+            let playlist = await req.models.playlist.one({id: item.id});
+            await Playlist.createOrUpdate(req, playlist, item);
+        }, () => resolve());
     });
-});
+    res.redirect('/playlists');
+}));
 
-router.get('/refresh', function(req, res) {
-    YtPlaylist.retrieve(req.session.ytAuth.access_token, function(items) {
-        async.each(items, function iteratee(item, callback) {
-            req.models.playlist.one({id: item.id}, function(err, playlist) {
-                if (err) throw err;
-                Playlist.createOrUpdate(req, playlist, item, callback);
-            });
-        }, function done() {
-            res.redirect('/playlists');
-        });
-    });
-});
+router.get('/:id', wrap(async function(req, res) {
+    let playlist = await Playlist.getFromDbOrApi(req, req.params.id);
+    if(playlist.user_id !== req.user.id) {
+        return res.send(401);
+    }
+    let videos = await playlist.getVideos();
 
-router.get('/:id', function(req, res) {
-    Playlist.getFromDbOrApi(req, req.params.id, function(playlist) {
-        req.models.video.find({playlist_id: req.params.id}, {order: 'position'}, function(err, items) {
-            if (err) throw err;
+    await Video.preload(req, videos, 'original_upload_id', 'originalUpload', 'upload');
+    await Video.preload(req, videos, 'mp3_upload_id', 'mp3Upload', 'upload');
 
-            if (items.length == 0){
-                res.redirect('/playlists/' + req.params.id + '/refresh');
-            } else {
-                res.render('playlist', {title: playlist.title, playlist: playlist, items: items});
-            }
-        });
-    });
-});
+    if (videos.length === 0){
+        res.redirect('/playlists/' + req.params.id + '/refresh');
+    } else {
+        res.render('playlist', {title: playlist.title, playlist: playlist, items: videos});
+    }
+}));
 
-router.get('/:id/refresh', function(req, res) {
-    Playlist.getFromDbOrApi(req, req.params.id, function(playlist) {
-        YtPlaylist.getItems(req.params.id, req.session.ytAuth.access_token, function(items) {
-            async.each(items, function iteratee(item, callback) {
-                if(item.video){
-                    req.models.video.one({id: item.video.id}, function(err, video) {
-                        if (err) throw err;
-                        Video.createOrUpdate(req, playlist.id, video, item, callback);
-                    });
-                }
-            }, function done() {
-                req.models.video.find({playlist_id: playlist.id}, function(err, videos) {
-                    if (err) throw err;
-
-                    _(videos).each(function(video) {
-                        if(!_(items).find({video: {id: video.id}})){
-                            video.status = 'removed';
-                            video.save(function() {
-                                console.log(video.title + ' set as removed');
-                            });
-                        }
-                    });
-
-                    res.redirect('/playlists/' + playlist.id);
+router.get('/:id/refresh', wrap(async function(req, res) {
+    let playlist = await Playlist.getFromDbOrApi(req, req.params.id);
+    if(playlist.user_id !== req.user.id) {
+        return res.send(401);
+    }
+    let ytVideos = await YtPlaylist.getItems(req.params.id, req.session.ytAuth.access_token);
+    await new Promise((resolve, reject) => {
+        async.eachLimit(ytVideos, 4, async function iteratee(item) {
+            if (item.video) {
+                let video = await req.models.video.oneAsync({id: item.video.id});
+                video = await Video.createOrUpdate(req, video, item);
+                let playlistVideo = await req.models.playlist_video.oneAsync({
+                    video_id: video.id,
+                    playlist_id: playlist.id
                 });
-            });
+                await PlaylistVideo.createOrUpdate(req, playlistVideo, playlist, video, item);
+            }
+        }, (err) => {
+            if(err) return reject(err);
+            resolve()
         });
     });
-});
+    let videos = await playlist.getVideos();
+    await async.eachLimit(videos, 4, async function(video) {
+        if(!_(ytVideos).find({video: {id: video.id}})){
+            let playlistVideo = req.models.playlist_video.oneAsync({playlist_id: playlist.id, video_id: video.id});
+            playlistVideo.status = 'removed';
+            await playlistVideo.saveAsync();
+            console.log(video.title + ' set as removed');
+        }
+    });
 
-router.get('/:id/upload', function(req, res) {
-    Playlist.getFromDbOrApi(req, req.params.id, function(playlist) {
-        req.models.video.find({playlist_id: req.params.id}, {order: 'position'}, function(err, items) {
-            if (err) throw err;
-            async.eachLimit(items, 4, function iteratee(item, callback) {
-                if(!item.metadata.s3_file || !item.metadata.s3_ext){
-                    item.uploadToS3(callback);
-                }else{
-                    callback();
-                }
-            }, function done() {
-                console.log('-------------------------------------------');
-                console.log('All finished-------------------------------');
-                console.log('-------------------------------------------');
-            });
+    res.redirect('/playlists/' + playlist.id);
+}));
 
-            res.redirect('/playlists/' + playlist.id);
+router.get('/:id/upload', async function(req, res) {
+    let playlist = await Playlist.getFromDbOrApi(req, req.params.id);
+    if(playlist.user_id !== req.user.id) {
+        return res.send(401);
+    }
+
+    res.redirect('/playlists/' + playlist.id);
+
+    let videos = await playlist.getVideos();
+    await new Promise((resolve, reject) => {
+        async.eachLimit(videos, 4, async function iteratee(video) {
+            let upload = await video.getUpload();
+            if(!upload) {
+                await video.uploadToS3();
+            }
+        }, (err) => {
+            if(err) return reject(err);
+            resolve()
         });
     });
+
+    console.log('-------------------------------------------');
+    console.log('All finished-------------------------------');
+    console.log('-------------------------------------------');
 });
 
 router.get('/:id/convert', function(req, res) {
