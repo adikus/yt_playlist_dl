@@ -4,7 +4,8 @@ exports.define = function(db) {
         playlist_id : String,
         video_id    : String,
         user_id     : Number,
-        position    : Number
+        position    : Number,
+        status      : String
     }, {
         timestamp: true
     });
