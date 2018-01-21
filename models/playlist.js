@@ -50,7 +50,7 @@ exports.define = function(db, app) {
     });
 };
 
-exports.createOrUpdate = function(req, playlist, item, callback) {
+exports.createOrUpdate = async function(req, playlist, item, callback) {
     let params = {
         id: item.id,
         status: item.status.privacyStatus,
@@ -62,7 +62,7 @@ exports.createOrUpdate = function(req, playlist, item, callback) {
 
     if(playlist) {
         _(params).each(function(value, key) {
-            if(key != 'metadata') {
+            if(key !== 'metadata') {
                 playlist[key] = value;
             }else{
                 playlist.metadata = _(playlist.metadata).merge(value);
@@ -70,32 +70,26 @@ exports.createOrUpdate = function(req, playlist, item, callback) {
             }
         });
 
-        playlist.save(function(err, record) {
-            if (err) throw err;
-            callback(record);
-        })
+        playlist = await playlist.saveAsync();
     }else{
-        req.models.playlist.create(params, function(err, record) {
-            if (err) throw err;
-            callback(record);
-        });
+        playlist = await req.models.playlist.create(params);
     }
+    if(callback) {
+        callback(playlist);
+    }
+    return playlist;
 };
 
-exports.getFromDbOrApi = function(req, id, callback) {
-    let self = this;
+exports.getFromDbOrApi = async function(req, id, callback) {
+    let playlist = await req.models.playlist.oneAsync({id: id});
+    if(!playlist){
+        let ytPlaylist = await YtPlaylist.get(id, req.session.ytAuth.access_token);
+        playlist = await this.createOrUpdate(req, null, ytPlaylist);
+    }
 
-    req.models.playlist.one({id: id}, function(err, playlist) {
-        if (err) throw err;
-
-        if(playlist){
-            callback(playlist);
-        } else {
-            YtPlaylist.get(id, req.session.ytAuth.access_token, function(item) {
-                self.createOrUpdate(req, null, item, function(playlist) {
-                    callback(playlist);
-                });
-            });
-        }
-    });
+    if(callback) {
+        callback(playlist);
+    } else {
+        return playlist;
+    }
 };

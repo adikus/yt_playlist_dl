@@ -6,38 +6,51 @@ const ytVideo = require('./yt_video');
 const ytApiUrl = 'https://www.googleapis.com/youtube/v3';
 
 exports.search = function(token, qs, callback) {
-    request.get({
-        url: ytApiUrl + '/playlists',
-        qs: qs,
-        auth: {
-            bearer: token
-        }
-    }, function(err, response, body) {
-        let playlists = JSON.parse(body).items;
-        callback(playlists);
+    return new Promise(function (resolve, reject) {
+        request.get({
+            url: ytApiUrl + '/playlists',
+            qs: qs,
+            auth: {
+                bearer: token
+            }
+        }, function(err, response, body) {
+            if(err) return reject(err);
+            let playlists = JSON.parse(body).items;
+            if(callback) {
+                callback(playlists);
+            }
+            resolve(playlists);
+        });
     });
 };
 
-exports.retrieve = function(token, callback) {
+exports.retrieve = async function(token, callback) {
     let qs = {
         part: 'id,contentDetails,snippet,status',
         mine: 'true',
         maxResults: 50
     };
-    this.search(token, qs, function(items){
+    let items = await this.search(token, qs);
+    if(callback){
         callback(items);
-    });
+    } else {
+        return items;
+    }
 };
 
-exports.get = function(id, token, callback) {
+exports.get = async function(id, token, callback) {
     let qs = {
         part: 'id,contentDetails,snippet,status',
         id: id,
         maxResults: 50
     };
-    this.search(token, qs, function(items){
-        callback(items && items[0]);
-    });
+    let items = await this.search(token, qs);
+    let item = items && items[0];
+    if(callback){
+        callback(item);
+    } else {
+        return item;
+    }
 };
 
 exports.getItemsPage = function(id, pageToken, previousPageItems, token, callback) {

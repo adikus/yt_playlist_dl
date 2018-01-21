@@ -1,7 +1,6 @@
 const express = require('express');
 
 const Playlist = require('./../models/playlist');
-const exporter = require('./../services/exporter');
 
 const router = express.Router();
 
@@ -13,14 +12,10 @@ router.get('/', function(req, res) {
     });
 });
 
-router.get('/:id', function(req, res) {
-    Playlist.getFromDbOrApi(req, req.params.id, function(playlist) {
-        req.models.video.find({playlist_id: req.params.id}, {order: 'position'}, function(err, items) {
-            if (err) throw err;
-
-            res.json({playlist: playlist, items: items});
-        });
-    });
+router.get('/:id', async (req, res) => {
+    let playlist = await Playlist.getFromDbOrApi(req, req.params.id);
+    let videos = await req.models.video.findAsync({playlist_id: req.params.id}, {order: 'position'});
+    res.json({playlist: playlist, items: videos});
 });
 
 
