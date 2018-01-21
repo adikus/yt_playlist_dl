@@ -38,7 +38,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(fileUpload());
-app.use(session({ secret: 'verysecretsessionkey', saveUninitialized: false, resave: false, rolling: true }));
+app.use(session({ store: new (require('connect-pg-simple')(session))(), secret: 'verysecretsessionkey', saveUninitialized: false, resave: false, rolling: true }));
 app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
