@@ -74,7 +74,7 @@ orm.connect(process.env.DATABASE_URL, function (err, db) {
             } else {
                 playlist_video.position = video.position;
                 playlist_video.created_at = video.created_at;
-                playlist_video.saveAsync();
+                await playlist_video.saveAsync();
             }
         }).value());
     }).then(() => {
