@@ -75,13 +75,13 @@ exports.exportAlbum = async function(playlist, items, indexes) {
         let name = _(file.split('/')).last();
         zip.file(name, fs.readFileSync(file));
     });
-    let stream = zip.generateNodeStream({ streamFiles:true });
-    stream.on('finish', function () {
-        // Cleanup
-        // FIXME: seems that the event doesn't fire
+    let stream = zip.generateNodeStream({ streamFiles: true });
+    stream.cleanUp = function() {
         console.log('Cleaning up files.');
-        _(files).each(file => fs.unlink(file, () => {} ));
-    });
+        _(files).each(file => fs.unlinkSync(file));
+        fs.unlinkSync('./temp/' + albumDir + '/cover.jpg');
+        fs.rmdirSync('./temp/' + albumDir);
+    };
 
     return stream;
 };

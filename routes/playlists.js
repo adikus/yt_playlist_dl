@@ -141,7 +141,9 @@ router.post('/:id/export', wrap(async function(req, res) {
         'Content-Type': 'application/zip',
         'Content-disposition': 'attachment;filename="' + playlist.album_name + '.zip"'
     });
-    stream.pipe(res);
+    stream.pipe(res).on('finish', function () {
+        stream.cleanUp();
+    });
 
     console.log('Export done.');
 }));
