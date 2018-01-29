@@ -1,10 +1,6 @@
-const sanitize = require("sanitize-filename");
 const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
 const _ = require('lodash');
 
-const metadataGuesser = require('./../services/metadata_guesser');
 const ytDl = require('./../services/yt_dl');
 const download = require('./../services/download');
 const mp3Convert = require('./../services/mp3_convert');
@@ -38,14 +34,9 @@ exports.define = function(db, app) {
                 return this.app.models.upload.oneAsync({id: this.mp3_upload_id});
             },
 
-            guessMetadata: function() {
-                if(!this.guess){
-                    this.guess = metadataGuesser.guess(this.title, this.metadata.channelTitle);
-                }
-                return this.guess;
-            },
-
             uploadToS3: async function() {
+                // TODO: check for existing and delete
+
                 console.log('Resolving ' + this.id + ' (' + this.title + ')');
                 let audioUrlObject = await ytDl.get(this.id);
                 console.log('Uploading ' + this.id + ' (' + this.title + ')');
@@ -57,6 +48,8 @@ exports.define = function(db, app) {
             },
 
             convertAndUploadToS3: async function() {
+                // TODO: check for existing and delete
+
                 let upload = await this.getUpload();
                 if(!upload) throw "Couldn't find the upload";
 
@@ -72,61 +65,6 @@ exports.define = function(db, app) {
                 fs.unlink(mp3Path, () => {} );
                 this.mp3_upload_id = mp3Upload.id;
                 await this.saveAsync();
-            },
-
-            uploadUserMp3ToS3: function(mp3File, callback) {
-                let self = this;
-
-                let mp3Name = crypto.randomBytes(16).toString('hex');
-                mp3File.mv('./temp/' + mp3Name, function(err) {
-                    if (err) throw err;
-
-                    self.app.s3Bucket.uploadFileFromFS('playlists/' + self.playlist_id + '/mp3/' + mp3Name, './temp/' + mp3Name, 'audio/mp3')
-                        .then( key => {
-                            let name = path.parse(key).name;
-                            console.log('Uploaded mp3 ' + self.id + ' as ' + key);
-                            fs.unlink('./temp/' + name, () => {} );
-                            return self.saveMp3Metadata(name, callback);
-                        });
-                });
-            },
-
-            saveMetadata: function(metadata, callback){
-                this.metadata = _(this.metadata).merge(metadata);
-                this.markAsDirty('metadata');
-
-                this.save(function(err, record) {
-                    if (err) throw err;
-                    callback(null, record);
-                });
-            },
-
-            saveMp3Metadata: function(name, callback) {
-                this.saveMetadata({
-                    s3_mp3_file: name,
-                    s3_mp3_playlist_id: this.playlist_id
-                }, callback);
-            },
-
-            // TODO: These should be defined on playlist_video
-            metaArtist: function() {
-                return metadataGuesser.sanitizeArtist(this.metadata.artist || this.guessMetadata().artist) || '';
-            },
-
-            metaTitle: function() {
-                return this.metadata.title || this.guessMetadata().title || '';
-            },
-
-            metaGenre: function() {
-                return this.metadata.genre || this.guessMetadata().genre || '';
-            },
-
-            exportFileName: function() {
-                return sanitize(this.metaArtist() + " - " + this.metaTitle() + ".mp3");
-            },
-
-            exportFileNameN: function(i) {
-                return sanitize(('00' + i).slice(-3)) + " " + this.exportFileName();
             }
         }
     });
@@ -167,5 +105,16 @@ exports.preload = async function(req, videos, key, name, model_name) {
     let instances = await req.models[model_name].findAsync({id: ids});
     _(videos).each((video) => {
         video[name] = _(instances).find({id: video[key]});
+    });
+};
+
+exports.preloadCustomUploads = async function(req, videos) {
+    let ids = _(videos).map('playlistVideo').map('id').compact().value();
+    let customUploads = await req.models.custom_video_upload.findAsync({ playlist_video_id: ids });
+    await this.preload(req, customUploads, 'upload_id', 'upload', 'upload');
+    _(videos).each( (video) => video.customUploads = [] );
+    _(customUploads).each((upload) => {
+        let video = _(videos).find( (video) => { return video.playlistVideo.id === upload.playlist_video_id } );
+        video.customUploads.push(upload);
     });
 };

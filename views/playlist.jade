@@ -14,7 +14,7 @@ block content
 
     form(method='post', encType='multipart/form-data', action='/playlists/' + playlist.id + '/metadata')
         label(for='album_' + playlist.id) Album title
-        input(type='text', id='album_' + playlist.id, name='album', value=playlist.metadata.album)
+        input(type='text', id='album_' + playlist.id, name='album', value=playlist.album_name)
         br
         label(for='album_cover_' + playlist.id) Album cover
         input(type='file', id='album_cover_' + playlist.id, name='image_file')
@@ -56,32 +56,35 @@ block content
                         if item.mp3Upload
                             | &nbsp;
                             a(href=item.mp3Upload.S3Url()) mp3
+                        each customUpload, _ in item.customUploads
+                            | &nbsp;
+                            a(href=customUpload.upload.S3Url())= customUpload.type
                     td
                         a(href='/videos/' + item.id + '/upload') (Re)Upload to S3
                         | &nbsp;
                         a(href='/videos/' + item.id + '/convert') (Re)Convert to mp3
                         if !item.mp3Upload
-                            form(method='post', encType='multipart/form-data', action='/videos/' + item.id + '/upload-mp3')
+                            form(method='post', encType='multipart/form-data', action='/playlist-videos/' + item.playlistVideo.id + '/upload-mp3')
                                 input(type='file', name='mp3_file')
                                 input(type='submit', value='Upload mp3')
-                        form(method='post', encType='multipart/form-data', action='/videos/' + item.id + '/remove')
+                        form(method='post', encType='multipart/form-data', action='/playlist-videos/' + item.playlistVideo.id + '/remove')
                             if item.playlistVideo.status !== 'removed'
                                 input(type='submit', value='Remove')
                             else
                                 input(type='submit', value='Unremove')
                     td
-                        form(method='post', action='/videos/' + item.id + '/metadata')
-                            - guessed = item.guessMetadata()
-                            - has_metadata = item.metadata.artist && item.metadata.title
+                        form(method='post', action='/playlist-videos/' + item.playlistVideo.id + '/metadata')
+                            - guessed = item.playlistVideo.guessMetadata()
+                            - has_metadata = item.playlistVideo.artist && item.playlistVideo.title
                             span(class='metadata-cell ' + (has_metadata ? 'has-metadata' : 'no-metadata'))
                                 label(for='artist_' + item.id) Artist
-                                input(type='text', id='artist_' + item.id, name='artist', value=item.metadata.artist || (guessed && guessed.artist))
+                                input(type='text', id='artist_' + item.id, name='artist', value=item.playlistVideo.artist || (guessed && guessed.artist))
                                 br
                                 label(for='title_' + item.id) Title
-                                input(type='text', id='title_' + item.id, name='title', value=item.metadata.title || (guessed && guessed.title))
+                                input(type='text', id='title_' + item.id, name='title', value=item.playlistVideo.title || (guessed && guessed.title))
                                 br
                                 label(for='genre_' + item.id) Genre
-                                input(type='text', id='genre_' + item.id, name='genre', value=item.metadata.genre || (guessed && guessed.genre))
+                                input(type='text', id='genre_' + item.id, name='genre', value=item.playlistVideo.genre || (guessed && guessed.genre))
 
                                 input.submit.js-metadata-save(type='submit', value='Save')
                                 .js-metadata-save-message

@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const _ = require('lodash');
 
 const YtPlaylist = require('./yt_playlist');
+const moveFilePromise = require('./../lib/move_uploaded').moveFilePromise;
 
 exports.define = function(db, app) {
     return db.define("playlists", {
@@ -29,35 +30,24 @@ exports.define = function(db, app) {
                 videos = _(videos).sortBy((video) => {
                     let playlistVideo = _(playlistVideos).find({video_id: video.id});
                     video.playlistVideo = playlistVideo;
+                    playlistVideo.video = video;
                     video.position = playlistVideo.position;
                     return video.position;
                 }).value();
                 return videos;
             },
 
-            uploadAlbumCover: function(imageFile, callback) {
-                let self = this;
-
+            uploadAlbumCover: async function(imageFile) {
                 let name = crypto.randomBytes(16).toString('hex');
-                imageFile.mv('./temp/' + name, function(err) {
-                    if (err) throw err;
-
-                    console.log('Uploading cover for playlist', self.title);
-                    self.app.s3Bucket.uploadFileFromFS('covers/' + name, './temp/' + name, imageFile.mimeType)
-                        .then(() => {
-                            self.metadata.s3_album_cover = name;
-                            self.markAsDirty('metadata');
-                            self.save(function(err, record) {
-                                console.log('Uploaded cover art ' + self.id + ' as covers/' + name);
-                                if (err) throw err;
-                                callback(null, record);
-                            });
-                        });
-                });
+                await moveFilePromise(imageFile, './temp/' + name);
+                console.log('Uploading cover for playlist', this.title);
+                await this.app.s3Bucket.uploadFileFromFS('covers/' + name, './temp/' + name);
+                this.album_cover = name;
+                await this.saveAsync();
             },
 
             coverImageUrl: function() {
-                return this.metadata.s3_album_cover && this.app.s3Bucket.url('covers/' + this.metadata.s3_album_cover)
+                return this.album_cover && this.app.s3Bucket.url('covers/' + this.album_cover)
             }
         }
     });

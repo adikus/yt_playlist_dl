@@ -1,4 +1,10 @@
 const _ = require('lodash');
+const sanitize = require("sanitize-filename");
+const crypto = require('crypto');
+
+const metadataGuesser = require('./../services/metadata_guesser');
+const moveFilePromise = require('./../lib/move_uploaded').moveFilePromise;
+const Upload = require('./upload');
 
 exports.define = function(db, app) {
     return db.define("playlist_videos", {
@@ -19,6 +25,45 @@ exports.define = function(db, app) {
                 return next();
             }
         },
+        methods: {
+            guessMetadata: function() {
+                if(!this.guess){
+                    this.guess = metadataGuesser.guess(this.video.title, this.video.metadata.channelTitle);
+                }
+                return this.guess;
+            },
+
+            getArtist: function() {
+                return metadataGuesser.sanitizeArtist(this.artist || this.guessMetadata().artist) || '';
+            },
+
+            getTitle: function() {
+                return this.title || this.guessMetadata().title || '';
+            },
+
+            getGenre: function() {
+                return this.genre || this.guessMetadata().genre || '';
+            },
+
+            exportFileName: function() {
+                return sanitize(this.getArtist() + " - " + this.getTitle() + ".mp3");
+            },
+
+            exportFileNameN: function(i) {
+                return sanitize(('00' + i).slice(-3)) + " " + this.exportFileName();
+            },
+
+            uploadCustomFile: async function(file, ext, type) {
+                let name = crypto.randomBytes(16).toString('hex');
+                await moveFilePromise(file, './temp/' + name);
+                let upload = await Upload.createFromFile(this.app, {path: './temp/' + name, ext: ext});
+                this.app.models.custom_video_upload.createAsync({
+                    upload_id: upload.id,
+                    playlist_video_id: this.id,
+                    type
+                });
+            }
+        }
     });
 };
 

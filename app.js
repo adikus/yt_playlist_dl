@@ -18,6 +18,7 @@ const cors = require('cors');
 const index = require('./routes/index');
 const playlists = require('./routes/playlists');
 const videos = require('./routes/videos');
+const playlistVideos = require('./routes/playlist_videos');
 const apiPlaylists = require('./routes/api_playlists');
 const apiVideos = require('./routes/api_videos');
 const ytRouter = require('./routes/yt');
@@ -111,6 +112,7 @@ app.use('/yt', passCheck, ytRouter);
 // Routes that require both authentication and YT account
 app.use('/playlists', passCheck, ytCheck, playlists);
 app.use('/videos', passCheck, ytCheck, videos);
+app.use('/playlist-videos', passCheck, ytCheck, playlistVideos);
 
 // Routes that require API key authentication
 app.use('/api/playlists', cors(), apiKeyCheck, apiPlaylists);

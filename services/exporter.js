@@ -1,67 +1,87 @@
 const mkdirp = require('mkdirp');
-const request = require('request');
 const fs = require('fs');
 const _ = require('lodash');
 const exec = require('child_process').exec;
-const async = require('async');
 const JSZip = require("jszip");
+const download = require('./../services/download');
 
-exports.exportAlbum = function(playlist, items, indexes, callback) {
-    console.log('Exporting album ' + playlist.title);
-    let albumDir = './dist/' + playlist.metadata.album;
+const asyncPromise = require('./../lib/async-promise');
 
-    items = _(items).filter(item => { return indexes[item.id] > 0; } ).value();
-    _(items).each(function(item) { item.index = indexes[item.id]; });
-
-    let done = function(err, files) {
-        let zip = new JSZip();
-        _(files).each(function(file) {
-            let name = _(file.split('/')).last();
-            zip.file(name, fs.readFileSync(file));
-        });
-        let stream = zip.generateNodeStream({streamFiles:true});
-        callback(null, stream);
-        stream.on('finish', function () {
-            // Cleanup
-            // FIXME: seems that the event doesn't fire
-            console.log('Cleaning up files.');
-            _(files).each(file => fs.unlink(file, () => {} ));
-        });
-    };
-
-    mkdirp(albumDir, function(err) {
-        if(err) return callback(err);
-
-        let albumCoverFileName = albumDir + '/cover.jpg';
-        let albumFile = fs.createWriteStream(albumCoverFileName);
-        let N = items.length;
-        let files = [];
-        request.get(playlist.coverImageUrl()).pipe(albumFile).on('finish', function() {
-
-            async.eachLimit(items, 5, function iteratee(item, callback) {
-                let name = item.exportFileNameN(item.index);
-                console.log('Downloading ' + name);
-                let finalFileName = albumDir + '/' + name;
-                files.push(finalFileName);
-                if (!fs.existsSync(finalFileName)) {
-                    let file = fs.createWriteStream(finalFileName + '.temp');
-                    request.get(item.S3Mp3Url()).pipe(file).on('finish', function() {
-                        fs.renameSync(finalFileName + '.temp', finalFileName);
-                        let command = 'mid3v2 -a "' + item.metaArtist() + '" -A "' + playlist.metadata.album + '" -t "' + item.metaTitle() + '" -T ' + item.index + '/' + N + ' -g ' + item.metaGenre() + ' -p "' + albumCoverFileName + '::3:image/jpg" "' + finalFileName + '"';
-                        exec(command, function (error, stdout, stderr){
-                            if(error) {
-                                console.log(stderr);
-                                throw error;
-                            }
-                            callback(null);
-                        });
-                    });
-                } else {
-                    callback(null);
-                }
-            }, function() {
-                done(null, files);
-            });
+const mkdirpPromise = function(dir) {
+    return new Promise((resolve, reject) => {
+        mkdirp(dir, function(err) {
+            if(err) return reject(err);
+            resolve();
         });
     });
+};
+
+const execPromise = function(command) {
+    return new Promise((resolve, reject) => {
+        exec(command, function (error, stdout, stderr){
+            if(error) {
+                console.error(stderr);
+                return reject(error);
+            }
+            resolve();
+        });
+    });
+};
+
+exports.exportAlbum = async function(playlist, items, indexes) {
+    console.log('Exporting album ' + playlist.title);
+    let albumDir = 'dist/' + playlist.album_name;
+
+    items = _(items).filter(item => { return indexes[item.id] > 0; } ).value();
+    _(items).each((item) => { item.index = indexes[item.id]; });
+
+    await mkdirpPromise('./temp/' + albumDir);
+
+    let albumCoverFileName;
+    if(playlist.coverImageUrl()){
+        albumCoverFileName = albumDir + '/cover.jpg';
+        await download.run(playlist.coverImageUrl(), albumCoverFileName);
+    }
+    let N = items.length;
+    let files = [];
+
+    await asyncPromise.eachLimit(items, 5, async function iteratee(item) {
+        let name = item.playlistVideo.exportFileNameN(item.index);
+        console.log('Downloading ' + name);
+        let finalFileName = albumDir + '/' + name;
+        files.push('./temp/' + finalFileName);
+
+        if (!fs.existsSync('./temp/' + finalFileName)) {
+            let mp3Upload = await item.getMp3Upload();
+            await download.run(mp3Upload.S3Url(), finalFileName + '.temp');
+            console.log('Tagging ' + name);
+            fs.renameSync('./temp/' + finalFileName + '.temp', './temp/' + finalFileName);
+
+            let command = 'mid3v2';
+            command += ' -a "' + item.playlistVideo.getArtist() + '"';
+            command += ' -A "' + playlist.album_name + '"';
+            command += ' -t "' + item.playlistVideo.getTitle() + '"';
+            command += ' -T ' + item.index + '/' + N;
+            if(item.playlistVideo.getGenre() !== '') command += ' -g ' + item.playlistVideo.getGenre();
+            if(playlist.coverImageUrl()) command += ' -p "./temp/' + albumCoverFileName + '::3:image/jpg"';
+            command += ' "./temp/' + finalFileName + '"';
+
+            await execPromise(command);
+        }
+    });
+
+    let zip = new JSZip();
+    _(files).each(function(file) {
+        let name = _(file.split('/')).last();
+        zip.file(name, fs.readFileSync(file));
+    });
+    let stream = zip.generateNodeStream({ streamFiles:true });
+    stream.on('finish', function () {
+        // Cleanup
+        // FIXME: seems that the event doesn't fire
+        console.log('Cleaning up files.');
+        _(files).each(file => fs.unlink(file, () => {} ));
+    });
+
+    return stream;
 };

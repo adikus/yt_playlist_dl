@@ -47,7 +47,7 @@ orm.connect(process.env.DATABASE_URL, function (err, db) {
             //
             // let mp3_file = video.metadata.s3_mp3_file;
             // if(mp3_file){
-            //     mp3_file = 'playlists/' + pid + '/' + file;
+            //     mp3_file = 'playlists/' + pid + '/mp3/' + mp3_file;
             //     let mp3_upload = await models.upload.oneAsync({file: mp3_file});
             //     if(!mp3_upload){
             //         console.log('Creating mp3 upload for video ' + video.title);

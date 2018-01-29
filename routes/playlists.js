@@ -1,6 +1,5 @@
 const express = require('express');
 const _ = require('lodash');
-const async = require('async');
 
 const Playlist = require('./../models/playlist');
 const Video = require('./../models/video');
@@ -27,6 +26,7 @@ router.get('/refresh', wrap(async function(req, res) {
 }));
 
 router.get('/:id', wrap(async function(req, res) {
+    // TODO: extract common stuff
     let playlist = await Playlist.getFromDbOrApi(req, req.params.id);
     if(playlist.user_id !== req.user.id) {
         return res.send(401);
@@ -35,6 +35,7 @@ router.get('/:id', wrap(async function(req, res) {
 
     await Video.preload(req, videos, 'original_upload_id', 'originalUpload', 'upload');
     await Video.preload(req, videos, 'mp3_upload_id', 'mp3Upload', 'upload');
+    await Video.preloadCustomUploads(req, videos);
 
     if (videos.length === 0){
         res.redirect('/playlists/' + req.params.id + '/refresh');
@@ -57,7 +58,6 @@ router.get('/:id/refresh', wrap(async function(req, res) {
                 video_id: video.id,
                 playlist_id: playlist.id
             });
-            if(!playlistVideo.saveAsync) console.log('pv', playlistVideo);
             await PlaylistVideo.createOrUpdate(req, playlistVideo, playlist, video, item);
         }
     });
@@ -107,7 +107,7 @@ router.get('/:id/convert', async function(req, res) {
     await Video.preload(req, videos, 'mp3_upload_id', 'mp3Upload', 'upload');
 
     await asyncPromise.eachLimit(videos, 4, async function iteratee(video) {
-        if(!video.mp3_upload_id){
+        if(!video.mp3Upload){
             await video.convertAndUploadToS3();
         }
     });
@@ -117,57 +117,48 @@ router.get('/:id/convert', async function(req, res) {
     console.log('-------------------------------------------');
 });
 
-router.get('/:id/export', function(req, res) {
-    Playlist.getFromDbOrApi(req, req.params.id, function(playlist) {
-        req.models.video.find({playlist_id: playlist.id, status: 'public'}, {order: 'position'}, function(err, items) {
-            if (err) throw err;
+router.get('/:id/export', wrap(async function(req, res) {
+    let playlist = await Playlist.getFromDbOrApi(req, req.params.id);
+    if(playlist.user_id !== req.user.id) {
+        return res.send(401);
+    }
 
-            items = _(items).filter((item) => item.S3Mp3Url()).value();
+    let videos = await playlist.getVideos();
+    await Video.preload(req, videos, 'mp3_upload_id', 'mp3Upload', 'upload');
+    videos = _(videos).filter((video) => video.mp3Upload && video.mp3Upload.file).value();
+    res.render('export', {title: 'Export ' + playlist.title, playlist: playlist, items: videos});
+}));
 
-            res.render('export', {title: 'Export ' + playlist.title, playlist: playlist, items: items});
-        });
+router.post('/:id/export', wrap(async function(req, res) {
+    let playlist = await Playlist.getFromDbOrApi(req, req.params.id);
+    if(playlist.user_id !== req.user.id) {
+        return res.send(401);
+    }
+
+    let videos = await playlist.getVideos();
+    let stream = await exporter.exportAlbum(playlist, videos, req.body.index);
+    res.writeHead(200, {
+        'Content-Type': 'application/zip',
+        'Content-disposition': 'attachment;filename="' + playlist.album_name + '.zip"'
     });
-});
+    stream.pipe(res);
 
-router.post('/:id/export', function(req, res) {
-    Playlist.getFromDbOrApi(req, req.params.id, function(playlist) {
-        req.models.video.find({playlist_id: playlist.id, status: 'public'}, {order: 'position'}, function(err, items) {
-            if (err) throw err;
+    console.log('Export done.');
+}));
 
-            exporter.exportAlbum(playlist, items, req.body.index, function(err, stream) {
-                if(err) throw err;
+router.post('/:id/metadata', wrap(async function(req, res) {
+    let playlist = await Playlist.getFromDbOrApi(req, req.params.id);
+    if(playlist.user_id !== req.user.id) {
+        return res.send(401);
+    }
 
-                res.writeHead(200, {
-                    'Content-Type': 'application/zip',
-                    'Content-disposition': 'attachment;filename="' + playlist.metadata.album + '.zip"'
-                });
-                stream.pipe(res);
+    playlist.album_name = req.body.album;
+    await playlist.saveAsync();
 
-                console.log('Export done.');
-            });
-        });
-    });
-});
-
-router.post('/:id/metadata', function(req, res) {
-    Playlist.getFromDbOrApi(req, req.params.id, function(playlist) {
-        playlist.metadata.album = req.body.album;
-        playlist.markAsDirty('metadata');
-
-        playlist.save(function(err) {
-            if(err) throw err;
-
-            if(req.files && req.files.image_file && req.files.image_file.data.length){
-                playlist.uploadAlbumCover(req.files.image_file, function(err) {
-                    if(err) throw err;
-
-                    res.redirect('/playlists/' + playlist.id);
-                });
-            } else {
-                res.redirect('/playlists/' + playlist.id);
-            }
-        });
-    });
-});
+    if(req.files && req.files.image_file && req.files.image_file.data.length){
+        await playlist.uploadAlbumCover(req.files.image_file);
+    }
+    res.redirect('/playlists/' + playlist.id);
+}));
 
 module.exports = router;

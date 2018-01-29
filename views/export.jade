@@ -13,6 +13,6 @@ block content
             pre
                 input.js-change-index(type='text', value=i+1, name='index[' + item.id + ']', readonly=(i > 0))
                 input.js-change-start(type='radio', name='start', value=item.position, checked=(i == 0))
-                = item.exportFileName(i)
-                if item.metaGenre()
-                    = " (" + item.metaGenre() + ")"
+                = item.playlistVideo.exportFileName(i)
+                if item.playlistVideo.getGenre()
+                    = " (" + item.playlistVideo.getGenre() + ")"
