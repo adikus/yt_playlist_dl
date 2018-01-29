@@ -7,7 +7,10 @@ exports.define = function(db, app) {
         video_id    : String,
         user_id     : Number,
         position    : Number,
-        status      : String
+        status      : String,
+        artist      : String,
+        title       : String,
+        genre       : String
     }, {
         timestamp: true,
         hooks: {
