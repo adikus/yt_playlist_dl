@@ -24,7 +24,7 @@ exports.createOrUpdate = async function (req, playlistVideo, playlist, video, it
         playlist_id: playlist.id,
         video_id: video.id,
         user_id: playlist.user_id,
-        position: item.snippet.positio,
+        position: item.snippet.position,
         status: item.video.status.privacyStatus
     };
 

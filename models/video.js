@@ -34,6 +34,10 @@ exports.define = function(db, app) {
                 return this.app.models.upload.oneAsync({id: this.original_upload_id});
             },
 
+            getMp3Upload: async function() {
+                return this.app.models.upload.oneAsync({id: this.mp3_upload_id});
+            },
+
             guessMetadata: function() {
                 if(!this.guess){
                     this.guess = metadataGuesser.guess(this.title, this.metadata.channelTitle);
@@ -41,36 +45,33 @@ exports.define = function(db, app) {
                 return this.guess;
             },
 
-            uploadToS3: async function(callback) {
+            uploadToS3: async function() {
                 console.log('Resolving ' + this.id + ' (' + this.title + ')');
                 let audioUrlObject = await ytDl.get(this.id);
                 console.log('Uploading ' + this.id + ' (' + this.title + ')');
-                let [upload, format_id] = await Upload.createFromUrl(this.app, audioUrlObject);
+                let upload = await Upload.createFromUrl(this.app, audioUrlObject);
                 this.original_upload_id = upload.id;
-                this.metadata = _(this.metadata).merge({format_id});
+                this.metadata = _(this.metadata).merge({format_id: audioUrlObject.format_id});
                 this.markAsDirty('metadata');
                 await this.saveAsync();
             },
 
-            convertAndUploadToS3: function(callback) {
-                let self = this;
-
-                if(!this.metadata.s3_file)return callback('no s3 file', this);
+            convertAndUploadToS3: async function() {
+                let upload = await this.getUpload();
+                if(!upload) throw "Couldn't find the upload";
 
                 console.log('Downloading ' + this.id + '(' + this.title + ')');
-                let name = this.metadata.s3_file && path.parse(this.metadata.s3_file).name;
-                download.run(this.S3Url(), name).then( file => {
-                    console.log('Converting to mp3 ' + self.id + '(' + self.title + ')');
-                    return mp3Convert.run(file);
-                }).then( mp3Name => {
-                    fs.unlink('./temp/' + name, () => {} );
-                    return self.app.s3Bucket.uploadFileFromFS('playlists/' + self.playlist_id + '/mp3/' + mp3Name, './temp/' + mp3Name, 'audio/mp3');
-                }).then( key => {
-                    let name = path.parse(key).name;
-                    console.log('Uploaded mp3 ' + self.id + ' as ' + key);
-                    fs.unlink('./temp/' + name, () => {} );
-                    return self.saveMp3Metadata(name, callback);
-                });
+                let name = await upload.getFilename();
+                let file = await download.run(upload.S3Url(), name);
+                console.log('Converting to mp3 ' + this.id + '(' + this.title + ')');
+                let mp3Path = await mp3Convert.run(file);
+                console.log('Cleaning up download ' + this.id + '(' + this.title + ')');
+                fs.unlink(file.path, () => {} );
+                console.log('Uploading mp3 ' + this.id + '(' + this.title + ')');
+                let mp3Upload = await Upload.createFromFile(this.app, {path: mp3Path, ext: 'mp3'});
+                fs.unlink(mp3Path, () => {} );
+                this.mp3_upload_id = mp3Upload.id;
+                await this.saveAsync();
             },
 
             uploadUserMp3ToS3: function(mp3File, callback) {

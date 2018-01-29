@@ -8,6 +8,7 @@ const PlaylistVideo = require('./../models/playlist_video');
 const YtPlaylist = require('./../models/yt_playlist');
 const exporter = require('./../services/exporter');
 const wrap = require('./../lib/express-router-promise').wrap;
+const asyncPromise = require('./../lib/async-promise');
 
 const router = express.Router();
 
@@ -18,11 +19,9 @@ router.get('/', wrap(async function(req, res) {
 
 router.get('/refresh', wrap(async function(req, res) {
     let ytPlasylists = await YtPlaylist.retrieve(req.session.ytAuth.access_token);
-    await new Promise((resolve) => {
-        async.eachLimit(ytPlasylists, 4, async function iteratee(item) {
-            let playlist = await req.models.playlist.one({id: item.id});
-            await Playlist.createOrUpdate(req, playlist, item);
-        }, () => resolve());
+    await asyncPromise.eachLimit(ytPlasylists, 4, async function iteratee(item) {
+        let playlist = await req.models.playlist.one({id: item.id});
+        await Playlist.createOrUpdate(req, playlist, item);
     });
     res.redirect('/playlists');
 }));
@@ -50,26 +49,22 @@ router.get('/:id/refresh', wrap(async function(req, res) {
         return res.send(401);
     }
     let ytVideos = await YtPlaylist.getItems(req.params.id, req.session.ytAuth.access_token);
-    await new Promise((resolve, reject) => {
-        async.eachLimit(ytVideos, 4, async function iteratee(item) {
-            if (item.video) {
-                let video = await req.models.video.oneAsync({id: item.video.id});
-                video = await Video.createOrUpdate(req, video, item);
-                let playlistVideo = await req.models.playlist_video.oneAsync({
-                    video_id: video.id,
-                    playlist_id: playlist.id
-                });
-                await PlaylistVideo.createOrUpdate(req, playlistVideo, playlist, video, item);
-            }
-        }, (err) => {
-            if(err) return reject(err);
-            resolve()
-        });
+    await asyncPromise.eachLimit(ytVideos, 4, async function iteratee(item) {
+        if (item.video) {
+            let video = await req.models.video.oneAsync({id: item.video.id});
+            video = await Video.createOrUpdate(req, video, item);
+            let playlistVideo = await req.models.playlist_video.oneAsync({
+                video_id: video.id,
+                playlist_id: playlist.id
+            });
+            if(!playlistVideo.saveAsync) console.log('pv', playlistVideo);
+            await PlaylistVideo.createOrUpdate(req, playlistVideo, playlist, video, item);
+        }
     });
     let videos = await playlist.getVideos();
-    await async.eachLimit(videos, 4, async function(video) {
+    await asyncPromise.eachLimit(videos, 4, async function(video) {
         if(!_(ytVideos).find({video: {id: video.id}})){
-            let playlistVideo = req.models.playlist_video.oneAsync({playlist_id: playlist.id, video_id: video.id});
+            let playlistVideo = await req.models.playlist_video.oneAsync({playlist_id: playlist.id, video_id: video.id});
             playlistVideo.status = 'removed';
             await playlistVideo.saveAsync();
             console.log(video.title + ' set as removed');
@@ -88,16 +83,11 @@ router.get('/:id/upload', async function(req, res) {
     res.redirect('/playlists/' + playlist.id);
 
     let videos = await playlist.getVideos();
-    await new Promise((resolve, reject) => {
-        async.eachLimit(videos, 4, async function iteratee(video) {
-            let upload = await video.getUpload();
-            if(!upload) {
-                await video.uploadToS3();
-            }
-        }, (err) => {
-            if(err) return reject(err);
-            resolve()
-        });
+    await asyncPromise.eachLimit(videos, 4, async function iteratee(video) {
+        let upload = await video.getUpload();
+        if(!upload) {
+            await video.uploadToS3();
+        }
     });
 
     console.log('-------------------------------------------');
@@ -105,29 +95,26 @@ router.get('/:id/upload', async function(req, res) {
     console.log('-------------------------------------------');
 });
 
-router.get('/:id/convert', function(req, res) {
-    Playlist.getFromDbOrApi(req, req.params.id, function(playlist) {
-        req.models.video.find({playlist_id: req.params.id}, {order: 'position'}, function(err, items) {
-            if (err) throw err;
+router.get('/:id/convert', async function(req, res) {
+    let playlist = await Playlist.getFromDbOrApi(req, req.params.id);
+    if(playlist.user_id !== req.user.id) {
+        return res.send(401);
+    }
 
-            async.eachLimit(items, 4, function iteratee(item, callback) {
-                if(!item.metadata.s3_mp3_file){
-                    item.convertAndUploadToS3(function(err, item) {
-                        if(err)console.log(err);
-                        callback();
-                    });
-                }else{
-                    callback();
-                }
-            }, function done() {
-                console.log('-------------------------------------------');
-                console.log('All finished-------------------------------');
-                console.log('-------------------------------------------');
-            });
+    res.redirect('/playlists/' + playlist.id);
 
-            res.redirect('/playlists/' + playlist.id);
-        });
+    let videos = await playlist.getVideos();
+    await Video.preload(req, videos, 'mp3_upload_id', 'mp3Upload', 'upload');
+
+    await asyncPromise.eachLimit(videos, 4, async function iteratee(video) {
+        if(!video.mp3_upload_id){
+            await video.convertAndUploadToS3();
+        }
     });
+
+    console.log('-------------------------------------------');
+    console.log('All finished-------------------------------');
+    console.log('-------------------------------------------');
 });
 
 router.get('/:id/export', function(req, res) {

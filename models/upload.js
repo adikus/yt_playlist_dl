@@ -19,6 +19,10 @@ exports.define = function(db, app) {
         methods: {
             S3Url: function() {
                 return this.file && this.app.s3Bucket.url(this.file);
+            },
+
+            getFilename: function() {
+                return this.file && path.parse(this.file).name;
             }
         }
     });
@@ -26,12 +30,16 @@ exports.define = function(db, app) {
 
 exports.createFromUrl = async function(app, urlObject) {
     let file = await download.run(urlObject.url);
-    let name = path.parse(file.path).name;
-    let key = await app.s3Bucket.uploadFileFromFS('uploads/' + name, file.path, 'audio/' + urlObject.ext);
+    let upload = this.createFromFile(app, {path: file.path, ext: urlObject.ext});
     fs.unlink(file.path, () => {} );
-    let upload = await app.models.upload.createAsync({
+    return upload;
+};
+
+exports.createFromFile = async function(app, fileObject) {
+    let name = path.parse(fileObject.path).name;
+    let key = await app.s3Bucket.uploadFileFromFS('uploads/' + name, fileObject.path, 'audio/' + fileObject.ext);
+    return await app.models.upload.createAsync({
         file: key,
-        file_type: urlObject.ext
+        file_type: fileObject.ext
     });
-    return [upload, urlObject.format_id];
 };
