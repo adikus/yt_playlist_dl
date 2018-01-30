@@ -26,8 +26,12 @@ router.get('/:id', wrap(async (req, res) => {
     let playlistJson = _(playlist).pick(_.keys(req.models.playlist.properties));
     _(videos).each((video) => {
         video.playlistVideo = _(video.playlistVideo).pick(_.keys(req.models.playlist_video.properties));
-        video.originalUpload = _(video.originalUpload).pick(_.keys(req.models.upload.properties));
-        video.mp3Upload = _(video.mp3Upload).pick(_.keys(req.models.upload.properties));
+        video.originalUpload.url = video.originalUpload && video.originalUpload.S3Url();
+        video.mp3Upload.url = video.mp3Upload && video.mp3Upload.S3Url();
+        let uploadColumns = _.keys(req.models.upload.properties);
+        uploadColumns.push('url');
+        video.originalUpload = _(video.originalUpload).pick(uploadColumns);
+        video.mp3Upload = _(video.mp3Upload).pick(uploadColumns);
     });
     let videoColumns = _.keys(req.models.video.properties);
     videoColumns.push('originalUpload', 'mp3Upload', 'playlistVideo');
