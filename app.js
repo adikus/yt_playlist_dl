@@ -29,7 +29,7 @@ app.set('env', 'development');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.set('view engine', 'pug');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -37,12 +37,26 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 app.use(fileUpload());
 app.use(session({ store: new (require('connect-pg-simple')(session))(), secret: 'verysecretsessionkey', saveUninitialized: false, resave: false, rolling: true }));
 app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
+
+if (process.env.NODE_ENV !== 'production') {
+    const webpack = require('webpack');
+    const webpackDevMiddleware = require('webpack-dev-middleware');
+
+    const config = require('./webpack.config.js');
+    const compiler = webpack(config);
+
+    app.use(webpackDevMiddleware(compiler, {
+        publicPath: config.output.publicPath, noInfo: true
+    }));
+    app.use(require("webpack-hot-middleware")(compiler));
+}
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.s3Bucket = new S3Bucket('yt-playlist');
 

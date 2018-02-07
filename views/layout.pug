@@ -1,0 +1,15 @@
+doctype html
+html
+    head
+        title= title
+        link(rel='stylesheet', href='/dist/main.css')
+    body
+        #main-container.container-fluid
+            if messages.info
+                .alert.alert-info= messages.info
+            if messages.error
+                .alert.alert-danger= messages.error
+
+            block content
+
+        script(src='/dist/main.js')

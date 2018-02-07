@@ -4,7 +4,11 @@ const passport = require('passport');
 const router = express.Router();
 
 router.get('/', function(req, res, next) {
-    res.render('index', { title: 'YT Playlists DL', user: req.user });
+    if(req.user){
+        res.redirect('/playlists');
+    } else {
+        res.render('index', { title: 'YT Playlists DL', user: req.user });
+    }
 });
 
 router.post(
