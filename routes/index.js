@@ -17,8 +17,10 @@ router.post(
         failureRedirect: '/',
         failureFlash: true
     }), function(req, res) {
-        res.redirect(req.session.returnTo || '/playlists');
-        delete req.session.returnTo;
+        req.session.save(() => {
+            res.redirect(req.session.returnTo || '/playlists');
+            delete req.session.returnTo;
+        });
     }
 );
 
