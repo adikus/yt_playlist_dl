@@ -1,18 +1,19 @@
 extends layout
 
 block content
+    a.m-3.float-sm-right.btn.btn-primary(href='/playlists/refresh') Refresh
+    form-inline.m-3.float-sm-right.w-25
+        .input-group
+            .input-group-text
+                label.m-0(for='api_key') Your API Key
+            input#api_key.form-control(name='api_key', value=user.api_key)
     h1 YT Playlists
 
-    a(href='/playlists/refresh') Refresh
-    #playlists
+    .clearfix
+    .row
         each playlist in playlists
-            #playlist
-                a(href='/playlists/' + playlist.id)
-                    h2= playlist.title
-                    p= playlist.status
-                    img(src=playlist.metadata.thumbnails.medium.url)
-
-    br
-    br
-    b Your API key:
-    = user.api_key
+            .col-sm-3
+                a(href='/playlists/' + playlist.id).card.my-3.p-3
+                    img.card-img-top(src=playlist.metadata.thumbnails.medium.url)
+                    h4.card-title= playlist.title
+                    p.card-text= playlist.status
