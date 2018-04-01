@@ -4,7 +4,7 @@ block content
     a.m-2.float-sm-right.btn.btn-primary(href='/playlists/' + playlist.id + '/export') Export
     a.m-2.float-sm-right.btn.btn-primary(href='/playlists/' + playlist.id + '/convert') Convert to MP3
     a.m-2.float-sm-right.btn.btn-primary(href='/playlists/' + playlist.id + '/upload') Upload to S3
-    a.m-2.float-sm-right.btn.btn-primary(href='/refresh') Refresh playlist
+    a.m-2.float-sm-right.btn.btn-primary(href='/playlists/' + playlist.id + '/refresh') Refresh playlist
 
     a(href='/playlists') < YT playlists
 
@@ -43,7 +43,8 @@ block content
                             small
                                 = item.metadata.channelTitle
                                 a.float-sm-right(href='https://www.youtube.com/watch?v=' + item.id)= item.id
-                            img.card-img-top(src=item.metadata.thumbnails.default.url)
+                            - playableUrl = (item.mp3Upload && item.mp3Upload.S3Url()) || (item.upload && item.upload.S3Url()) || ('https://audio.adikus.me/yt/' + item.id)
+                            play-audio-image(image-src=item.metadata.thumbnails.default.url, title=item.title, url=playableUrl, @play="playTrack")
                         .col-sm-4
                             h6 Status & Uploads
                             div
@@ -100,3 +101,8 @@ block content
                                     .col-sm-6
                                         input.btn.btn-primary.btn-sm.submit.js-metadata-save(type='submit', value='Save')
                                 .js-metadata-save-message
+
+block footer
+    footer.footer(v-if="title")
+        .container-fluid
+            audio-controller(:title="title", :url="url", @play="url=null")

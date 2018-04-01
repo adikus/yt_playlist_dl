@@ -4,12 +4,16 @@ html
         title= title
         link(rel='stylesheet', href='/dist/main.css')
     body
-        #main-container.container-fluid
-            if messages.info
-                .alert.alert-info= messages.info
-            if messages.error
-                .alert.alert-danger= messages.error
+        #page-container
+            main.container-fluid
+                if messages.info
+                    .alert.alert-info= messages.info
+                if messages.error
+                    .alert.alert-danger= messages.error
 
-            block content
+                block content
+
+            block footer
+
 
         script(src='/dist/main.js')

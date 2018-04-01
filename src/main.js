@@ -6,10 +6,17 @@ import 'bootstrap';
 import './metadata'
 import './export'
 
+import PlayAudioImage from './PlayAudioImage.vue'
+import AudioController from './AudioController.vue'
+
 Vue.use(VueSocketio, io());
 
 window.app = new Vue({
-    el: '#main-container',
+    el: '#page-container',
+    data: {
+        title: null,
+        url: null
+    },
     sockets:{
         connect() {
             console.log('Connected to socket.io');
@@ -17,5 +24,14 @@ window.app = new Vue({
         }
     },
     components: {
+        'play-audio-image': PlayAudioImage,
+        'audio-controller': AudioController
+    },
+    mounted () {},
+    methods: {
+        playTrack(title, url) {
+            this.title = title;
+            this.url = url;
+        }
     }
 });
