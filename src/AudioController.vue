@@ -8,6 +8,17 @@
             @playback:end="playbackEnded"
             @position:update="updatePosition">
         </vue-audio>
+        <vue-slider
+            class="slider"
+            ref="slider"
+            v-model="observedPosition"
+            :max="duration"
+            :interval="0.1"
+            :tooltip="false"
+            @callback="setPosition"
+            @drag-start="draggingSlider=true"
+            @drag-end="draggingSlider=false; setPosition($event.val)"
+        ></vue-slider>
         <i class="fa fa-play mr-2 playback-control" v-if="play" @click="play = false"></i>
         <i class="fa fa-pause mr-2 playback-control" v-if="!play" @click="play = true"></i>
         {{minutes}}:{{seconds}}
@@ -18,6 +29,7 @@
 
 <script>
     import Audio from './Audio.vue'
+    import vueSlider from 'vue-slider-component'
 
     export default {
         props: ['title', 'url'],
@@ -26,7 +38,8 @@
                 play: false,
                 position: 0,
                 observedPosition: 0,
-                length: 0,
+                draggingSlider: false,
+                duration: 0,
                 filename: null,
                 loading: false,
                 minutes: '00',
@@ -34,15 +47,16 @@
             };
         },
         mounted () {
-          if(this.url){
+            window.slider = this.$refs.slider;
+            if(this.url){
               this.playTrack();
-          }
+            }
         },
         methods: {
-            loadingReady (length) {
+            loadingReady (duration) {
                 console.log('Track loaded');
                 this.play = true;
-                this.length = length;
+                this.duration = duration;
                 this.loading = false;
             },
             playbackEnded () {
@@ -55,9 +69,21 @@
                 this.loading = true;
                 this.$emit('play');
             },
+            setPosition (position) {
+                if(this.draggingSlider){
+                    this.setObservedPosition(position);
+                } else {
+                    this.position = position;
+                }
+            },
             updatePosition (position) {
-                this.observedPosition = position;
+                if(!this.draggingSlider) {
+                   this.setObservedPosition(position);
+                }
                 this.position = null;
+            },
+            setObservedPosition (position) {
+                this.observedPosition = position;
 
                 this.seconds = this.formatTime(Math.floor(this.observedPosition % 60));
                 this.minutes = this.formatTime(Math.floor(this.observedPosition / 60));
@@ -74,7 +100,8 @@
             }
         },
         components: {
-            'vue-audio': Audio
+            'vue-audio': Audio,
+            vueSlider
         }
     };
 </script>
@@ -83,5 +110,12 @@
     .playback-control {
         cursor: pointer;
         font-size: 1.2em;
+    }
+
+    .slider {
+        position: absolute;
+        top: -8px;
+        width: 100% !important;
+        margin-left: -15px;
     }
 </style>
