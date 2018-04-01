@@ -1,6 +1,6 @@
 <template>
     <div class="card-img-top-container" @click="$emit('play', title, url)">
-        <img class="card-img-top" :src="imageSrc">
+        <img class="card-img-top" v-lazy="imageSrc">
         <div class="card-img-top-overlay">
             <div class="fa fa-play"></div>
         </div>

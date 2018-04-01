@@ -6,6 +6,7 @@
             :filename="filename"
             @loading:ready="loadingReady"
             @playback:end="playbackEnded"
+            @playback:failed="playbackFailed"
             @position:update="updatePosition">
         </vue-audio>
         <vue-slider
@@ -19,8 +20,8 @@
             @drag-start="draggingSlider=true"
             @drag-end="draggingSlider=false; setPosition($event.val)"
         ></vue-slider>
-        <i class="fa fa-play mr-2 playback-control" v-if="play" @click="play = false"></i>
-        <i class="fa fa-pause mr-2 playback-control" v-if="!play" @click="play = true"></i>
+        <i class="fa fa-play mr-2 playback-control" v-if="play" @click="setPause"></i>
+        <i class="fa fa-pause mr-2 playback-control" v-if="!play" @click="setPlay"></i>
         {{minutes}}:{{seconds}}
         &nbsp; | &nbsp;
         {{title}}
@@ -43,7 +44,8 @@
                 filename: null,
                 loading: false,
                 minutes: '00',
-                seconds: '00'
+                seconds: '00',
+                playFailed: false
             };
         },
         mounted () {
@@ -90,6 +92,22 @@
             },
             formatTime (n) {
                 return n > 99 ? ('0' + n).slice(-3) : ('0' + n).slice(-2);
+            },
+            setPlay () {
+                if(this.playFailed){
+                    // Workaround for mobile requiring the play() to be initiated  by gesture
+                    // TODO: autodetect mobile?
+                    window.audioTag.play();
+                    this.playFailed = false;
+                }
+                this.play = true;
+            },
+            setPause () {
+                this.play = false;
+            },
+            playbackFailed () {
+                this.playFailed = true;
+                this.play = false;
             }
         },
         watch: {

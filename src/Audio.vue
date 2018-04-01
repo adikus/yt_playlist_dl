@@ -34,7 +34,10 @@
             },
             play (shouldPlay) {
                 if(shouldPlay){
-                    this.tag.play();
+                    this.tag.play().catch(err => {
+                        console.error(err);
+                        this.$emit('playback:failed');
+                    });
                 }else{
                     this.tag.pause();
                 }

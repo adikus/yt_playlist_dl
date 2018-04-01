@@ -6,10 +6,13 @@ import 'bootstrap';
 import './metadata'
 import './export'
 
+import VueLazyload from 'vue-lazyload'
+
 import PlayAudioImage from './PlayAudioImage.vue'
 import AudioController from './AudioController.vue'
 
 Vue.use(VueSocketio, io());
+Vue.use(VueLazyload);
 
 window.app = new Vue({
     el: '#page-container',

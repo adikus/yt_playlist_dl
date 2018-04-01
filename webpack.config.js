@@ -11,7 +11,7 @@ let extractSass = new ExtractTextPlugin({
 
 
 module.exports = {
-    entry: ['babel-polyfill', './src/main.js', './src/css/main.scss'],
+    entry: ['babel-polyfill', './src/main.js', 'font-awesome/scss/font-awesome.scss', './src/css/main.scss'],
     output: {
         path: path.resolve(__dirname, './public/'),
         publicPath: '/',
@@ -74,19 +74,19 @@ module.exports = {
                 }
             },
             {
-                test: /.(ttf|otf|eot|svg|woff(2)?)(\?[a-z0-9]+)?$/,
-                use: [{
-                    loader: 'file-loader',
-                    options: {
-                        name: '[name].[ext]',
-                        outputPath: 'fonts/',    // where the fonts will go
-                        publicPath: '../'       // override the default path
-                    }
-                }]
+                test: /\.woff2?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+                use: 'url-loader?limit=10000',
             },
             {
-                test: /\.(eot|svg|ttf|woff|woff2)$/,
-                loader: 'file-loader?name=public/fonts/[name].[ext]'
+                test: /\.(ttf|eot|svg)(\?[\s\S]+)?$/,
+                use: 'file-loader',
+            },
+            {
+                test: /font-awesome\.config\.js/,
+                use: [
+                    { loader: 'style-loader' },
+                    { loader: 'font-awesome-loader' }
+                ]
             }
         ]
     },
