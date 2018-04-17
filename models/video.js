@@ -5,7 +5,7 @@ const ytDl = require('./../services/yt_dl');
 const download = require('./../services/download');
 const mp3Convert = require('./../services/mp3_convert');
 const Upload = require('./upload');
-const to = require('../lib/to');
+const to = require('../lib/to').to;
 
 exports.define = function(db, app) {
     return db.define("videos", {
