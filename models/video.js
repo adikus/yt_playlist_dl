@@ -5,6 +5,7 @@ const ytDl = require('./../services/yt_dl');
 const download = require('./../services/download');
 const mp3Convert = require('./../services/mp3_convert');
 const Upload = require('./upload');
+const to = require('../lib/to');
 
 exports.define = function(db, app) {
     return db.define("videos", {
@@ -38,9 +39,13 @@ exports.define = function(db, app) {
                 // TODO: check for existing and delete
 
                 console.log('Resolving ' + this.id + ' (' + this.title + ')');
-                let audioUrlObject = await ytDl.get(this.id);
+                let [err, audioUrlObject] = await to(ytDl.get(this.id));
+                if(err) {
+                    return console.log('Failed to resolve ' + this.id + ' (' + this.title + ')');
+                }
                 console.log('Uploading ' + this.id + ' (' + this.title + ')');
                 let upload = await Upload.createFromUrl(this.app, audioUrlObject);
+                console.log('Saving upload for ' + this.id + ' (' + this.title + ')');
                 this.original_upload_id = upload.id;
                 this.metadata = _(this.metadata).merge({format_id: audioUrlObject.format_id});
                 this.markAsDirty('metadata');
@@ -63,6 +68,7 @@ exports.define = function(db, app) {
                 console.log('Uploading mp3 ' + this.id + '(' + this.title + ')');
                 let mp3Upload = await Upload.createFromFile(this.app, {path: mp3Path, ext: 'mp3'});
                 fs.unlink(mp3Path, () => {} );
+                console.log('Saving mp3 upload for ' + this.id + ' (' + this.title + ')');
                 this.mp3_upload_id = mp3Upload.id;
                 await this.saveAsync();
             }
