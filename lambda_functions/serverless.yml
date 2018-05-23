@@ -1,0 +1,38 @@
+service: yt-playlist-dl-helpers
+
+frameworkVersion: ">=1.1.0"
+
+custom:
+  bucket: yt-playlist
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  stage: dev
+  region: eu-central-1
+  deploymentBucket: serverless.deploy.yt-playlist-dl-helpers
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:GetObject
+        - s3:PutObject
+      Resource: "arn:aws:s3:::${self:custom.bucket}/*"
+  stackTags:
+    GIT_COMMIT: ${git:sha1}
+
+functions:
+  resolve:
+    handler: handler.resolve
+    memorySize: 256
+    timeout: 60
+    environment:
+      BUCKET: ${self:custom.bucket}
+  convert:
+    handler: handler.convert
+    memorySize: 256
+    timeout: 120
+    environment:
+      BUCKET: ${self:custom.bucket}
+
+plugins:
+  - serverless-plugin-git-variables

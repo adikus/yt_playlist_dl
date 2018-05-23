@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "async": "^2.1.4",
+    "aws-sdk": "^2.243.1",
     "bcrypt": "^1.0.2",
     "body-parser": "~1.15.2",
     "connect-pg-simple": "^4.2.1",
