@@ -2,6 +2,7 @@ const _ = require('lodash');
 
 const resolveYt = require('./../services/lambdas').resolve;
 const convertToMp3 = require('./../services/lambdas').convert;
+const to = require('../lib/to');
 
 exports.define = function(db, app) {
     return db.define("videos", {
@@ -42,7 +43,10 @@ exports.define = function(db, app) {
                     await this.saveAsync();
                 }
 
-                let response = await resolveYt(this.id);
+                let [err, response] = await to(resolveYt(this.id));
+                if(err) {
+                    return console.log('Failed to resolve ' + this.id + ' (' + this.title + ')');
+                }
                 let upload = await this.app.models.upload.createAsync({
                     file: response.key,
                     file_type: response.ext
