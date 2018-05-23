@@ -18,13 +18,13 @@ async function execPromise(command) {
 }
 
 async function resolveYtInfo(id) {
-    let output = await execPromise(`bin/youtube-dl -j --no-cache-dir -- ${id}`);
+    let output = await execPromise(`bin/youtube-dl -j --cache-dir /tmp/yt -- ${id}`);
     return JSON.parse(output);
 }
 
 async function downloadYtTrack(id, format_id) {
     let filename = '/tmp/yt_track';
-    await execPromise(`bin/youtube-dl -f ${format_id} --no-cache-dir -o ${filename} -- ${id}`);
+    await execPromise(`bin/youtube-dl -f ${format_id} --cache-dir /tmp/yt -o ${filename} -- ${id}`);
     return filename;
 }
 
