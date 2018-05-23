@@ -4,6 +4,8 @@
  * Module dependencies.
  */
 
+require('dotenv').config();
+
 let app = require('../app');
 let debug = require('debug')('yt-playlist-dl:server');
 let http = require('http');

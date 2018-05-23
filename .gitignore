@@ -7,3 +7,5 @@ data/titles.json
 dist/
 temp/
 .env
+lambda_functions/.serverless
+lambda_functions/tmp/*
