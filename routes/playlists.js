@@ -83,7 +83,7 @@ router.get('/:id/upload', async function(req, res) {
     res.redirect('/playlists/' + playlist.id);
 
     let videos = await playlist.getVideos();
-    await asyncPromise.eachLimit(videos, 4, async function iteratee(video) {
+    await asyncPromise.eachLimit(videos, 50, async function iteratee(video) {
         let upload = await video.getUpload();
         if(!upload) {
             await video.uploadToS3();
@@ -106,7 +106,7 @@ router.get('/:id/convert', async function(req, res) {
     let videos = await playlist.getVideos();
     await Video.preload(req, videos, 'mp3_upload_id', 'mp3Upload', 'upload');
 
-    await asyncPromise.eachLimit(videos, 4, async function iteratee(video) {
+    await asyncPromise.eachLimit(videos, 200, async function iteratee(video) {
         if(!video.mp3Upload){
             await video.convertAndUploadToS3();
         }

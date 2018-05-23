@@ -1,11 +1,7 @@
-const fs = require('fs');
 const _ = require('lodash');
 
-const ytDl = require('./../services/yt_dl');
-const download = require('./../services/download');
-const mp3Convert = require('./../services/mp3_convert');
-const Upload = require('./upload');
-const to = require('../lib/to').to;
+const resolveYt = require('./../services/lambdas').resolve;
+const convertToMp3 = require('./../services/lambdas').convert;
 
 exports.define = function(db, app) {
     return db.define("videos", {
@@ -36,38 +32,48 @@ exports.define = function(db, app) {
             },
 
             uploadToS3: async function() {
-                // TODO: check for existing and delete
-
                 console.log('Resolving ' + this.id + ' (' + this.title + ')');
-                let [err, audioUrlObject] = await to(ytDl.get(this.id));
-                if(err) {
-                    return console.log('Failed to resolve ' + this.id + ' (' + this.title + ')');
+
+                if(this.original_upload_id){
+                    console.log('Removing old upload for ' + this.id + ' (' + this.title + ')');
+                    let originalUpload = await this.getUpload();
+                    await app.s3Bucket.removeFile(originalUpload.file);
+                    this.original_upload_id = null;
+                    await this.saveAsync();
                 }
-                console.log('Uploading ' + this.id + ' (' + this.title + ')');
-                let upload = await Upload.createFromUrl(this.app, audioUrlObject);
+
+                let response = await resolveYt(this.id);
+                let upload = await this.app.models.upload.createAsync({
+                    file: response.key,
+                    file_type: response.ext
+                });
                 console.log('Saving upload for ' + this.id + ' (' + this.title + ')');
                 this.original_upload_id = upload.id;
-                this.metadata = _(this.metadata).merge({format_id: audioUrlObject.format_id});
+                this.metadata = _(this.metadata).merge({format_id: response.format_id});
                 this.markAsDirty('metadata');
                 await this.saveAsync();
             },
 
             convertAndUploadToS3: async function() {
-                // TODO: check for existing and delete
+                console.log('Converting to mp3 ' + this.id + '(' + this.title + ')');
+
+                if(this.mp3_upload_id){
+                    console.log('Removing old mp3 upload for ' + this.id + ' (' + this.title + ')');
+                    let mp3Upload = await this.getMp3Upload();
+                    await app.s3Bucket.removeFile(mp3Upload.file);
+                    this.mp3_upload_id = null;
+                    await this.saveAsync();
+                }
 
                 let upload = await this.getUpload();
                 if(!upload) throw "Couldn't find the upload";
 
-                console.log('Downloading ' + this.id + '(' + this.title + ')');
-                let name = await upload.getFilename();
-                let file = await download.run(upload.S3Url(), name);
-                console.log('Converting to mp3 ' + this.id + '(' + this.title + ')');
-                let mp3Path = await mp3Convert.run(file);
-                console.log('Cleaning up download ' + this.id + '(' + this.title + ')');
-                fs.unlink(file.path, () => {} );
-                console.log('Uploading mp3 ' + this.id + '(' + this.title + ')');
-                let mp3Upload = await Upload.createFromFile(this.app, {path: mp3Path, ext: 'mp3'});
-                fs.unlink(mp3Path, () => {} );
+                let response = await convertToMp3(upload.file);
+                let mp3Upload = await this.app.models.upload.createAsync({
+                    file: response.key,
+                    file_type: 'mp3'
+                });
+
                 console.log('Saving mp3 upload for ' + this.id + ' (' + this.title + ')');
                 this.mp3_upload_id = mp3Upload.id;
                 await this.saveAsync();

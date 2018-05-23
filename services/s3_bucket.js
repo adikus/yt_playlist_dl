@@ -35,6 +35,21 @@ module.exports = function(bucket_name) {
             });
         },
 
+        removeFile: function(key) {
+            let params = {
+                Bucket: this.name,
+                Delete: { Objects: [{Key: key}] }
+            };
+
+            let self = this;
+
+            return new Promise(function (resolve) {
+                self.client.deleteObjects(params).on('end', function() {
+                    resolve(null);
+                });
+            });
+        },
+
         url: function(key) {
             return 'http://' + this.name + '.s3-' + process.env.S3_REGION + '.amazonaws.com/' + key;
         }
