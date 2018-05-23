@@ -1,6 +1,7 @@
 const exec = require('child_process').exec;
 const util = require('util');
 const fs = require('fs');
+const crypto = require('crypto');
 
 const aws = require('aws-sdk');
 
@@ -23,7 +24,7 @@ async function resolveYtInfo(id) {
 }
 
 async function downloadYtTrack(id, format_id) {
-    let filename = '/tmp/yt_track';
+    let filename = `/tmp/${crypto.randomBytes(16).toString('hex')}`;
     await execPromise(`bin/youtube-dl -f ${format_id} --cache-dir /tmp/yt -o ${filename} -- ${id}`);
     return filename;
 }
@@ -49,6 +50,8 @@ module.exports.resolve = async function(event, context, callback) {
         Bucket: process.env.BUCKET,
         Key: params.key,
         Body: file,
+        ACL: 'public-read',
+        ContentType: `audio/${ext}`
     }).promise();
 
     callback(null, {ext, format_id, key: params.key});
@@ -74,11 +77,11 @@ module.exports.convert = async function(event, context, callback) {
 
     console.log("Invoking convert function with params", params);
 
-    let download_filename = await downloadFromS3(params.source_key, '/tmp/source_file');
+    let download_filename = await downloadFromS3(params.source_key, `/tmp/${crypto.randomBytes(16).toString('hex')}`);
 
     console.log('Downloaded, converting...');
 
-    let dest_filename = '/tmp/dest_file';
+    let dest_filename = `/tmp/${crypto.randomBytes(16).toString('hex')}`;
     await execPromise(`./bin/ffmpeg/ffmpeg -y -i ${download_filename} -f mp3 -b:a 128k ${dest_filename}`);
 
     let file = await util.promisify(fs.readFile)(dest_filename);
@@ -89,6 +92,8 @@ module.exports.convert = async function(event, context, callback) {
         Bucket: process.env.BUCKET,
         Key: params.dest_key,
         Body: file,
+        ACL: 'public-read',
+        ContentType: 'audio/mp3'
     }).promise();
 
 
