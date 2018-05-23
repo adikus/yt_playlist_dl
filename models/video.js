@@ -2,7 +2,7 @@ const _ = require('lodash');
 
 const resolveYt = require('./../services/lambdas').resolve;
 const convertToMp3 = require('./../services/lambdas').convert;
-const to = require('../lib/to');
+const to = require('../lib/to').to;
 
 exports.define = function(db, app) {
     return db.define("videos", {
