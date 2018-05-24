@@ -51,7 +51,7 @@ module.exports = function(bucket_name) {
         },
 
         url: function(key) {
-            return 'http://' + this.name + '.s3-' + process.env.S3_REGION + '.amazonaws.com/' + key;
+            return 'https://' + this.name + '.s3-' + process.env.S3_REGION + '.amazonaws.com/' + key;
         }
     };
 };
