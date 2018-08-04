@@ -5,6 +5,7 @@ lib/youtube-dl
 data/artists.json
 data/titles.json
 dist/
+public/
 temp/
 .env
 lambda_functions/.serverless
