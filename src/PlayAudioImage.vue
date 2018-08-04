@@ -1,5 +1,5 @@
 <template>
-    <div class="card-img-top-container" @click="$emit('play', title, url)">
+    <div class="card-img-top-container" @click="playTrack">
         <img class="card-img-top" v-lazy="imageSrc"/>
         <div class="card-img-top-overlay">
             <div class="fa fa-play"></div>
@@ -9,7 +9,12 @@
 
 <script>
     export default {
-        props: ['imageSrc', 'title', 'url']
+        props: ['imageSrc', 'title', 'url'],
+        methods: {
+            playTrack() {
+                this.$root.$emit('play', this.title, this.url);
+            }
+        }
     };
 </script>
 

@@ -8,8 +8,8 @@ import './export'
 
 import VueLazyload from 'vue-lazyload'
 
-import PlayAudioImage from './PlayAudioImage.vue'
 import AudioController from './AudioController.vue'
+import VideoList from './VideoList.vue'
 
 Vue.use(VueSocketio, io());
 Vue.use(VueLazyload);
@@ -18,7 +18,8 @@ window.app = new Vue({
     el: '#page-container',
     data: {
         title: null,
-        url: null
+        url: null,
+        imports: window.vueData || {}
     },
     sockets:{
         connect() {
@@ -27,10 +28,12 @@ window.app = new Vue({
         }
     },
     components: {
-        'play-audio-image': PlayAudioImage,
-        'audio-controller': AudioController
+        'audio-controller': AudioController,
+        'video-list': VideoList
     },
-    mounted () {},
+    created () {
+        this.$root.$on('play', this.playTrack);
+    },
     methods: {
         playTrack(title, url) {
             this.title = title;

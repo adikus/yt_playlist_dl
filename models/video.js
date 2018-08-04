@@ -32,6 +32,15 @@ exports.define = function(db, app) {
                 return this.app.models.upload.oneAsync({id: this.mp3_upload_id});
             },
 
+            stringify: function() {
+                return _(this).pick('id', 'title', 'metadata').extend({
+                    playlistVideo: this.playlistVideo.stringify(),
+                    originalUpload: this.originalUpload && this.originalUpload.stringify(),
+                    mp3Upload: this.mp3Upload && this.mp3Upload.stringify(),
+                    customUploads: this.customUploads.map((customUpload) => customUpload.stringify())
+                }).value();
+            },
+
             uploadToS3: async function() {
                 console.log('Resolving ' + this.id + ' (' + this.title + ')');
 
