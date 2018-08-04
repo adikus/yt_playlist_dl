@@ -6,6 +6,7 @@ data/artists.json
 data/titles.json
 dist/
 public/
+webpack-assets.json
 temp/
 .env
 lambda_functions/.serverless
