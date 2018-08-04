@@ -11,7 +11,9 @@ block content
     h1= playlist.title
     p
         | Status:&nbsp;
-        em=playlist.status
+        em= playlist.status
+        | &nbsp;&nbsp;Video count:&nbsp;
+        em= items.length
 
     h2 Album settings
 
