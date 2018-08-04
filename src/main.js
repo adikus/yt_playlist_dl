@@ -7,12 +7,14 @@ import './metadata'
 import './export'
 
 import VueLazyload from 'vue-lazyload'
+import infiniteScroll from 'vue-infinite-scroll'
 
 import AudioController from './AudioController.vue'
 import VideoList from './VideoList.vue'
 
 Vue.use(VueSocketio, io());
 Vue.use(VueLazyload);
+Vue.use(infiniteScroll);
 
 window.app = new Vue({
     el: '#page-container',
