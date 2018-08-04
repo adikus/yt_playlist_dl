@@ -45,15 +45,17 @@ module.exports = {
                 req.session.ytAuth = JSON.parse(data);
 
                 let expiration = new Date();
+                let refershToken = req.session.ytAuth.refresh_token || params.refresh_token;
                 expiration.setSeconds(expiration.getSeconds() + req.session.ytAuth.expires_in);
                 req.models.yt_session.create({
                     access_token: req.session.ytAuth.access_token,
-                    refresh_token: req.session.ytAuth.refresh_token || params.refresh_token,
+                    refresh_token: refershToken,
                     user_id: req.user.id,
                     expires_at: expiration
                 }, function (err) {
                     if (err) throw err;
                     req.session.ytAuth.expires_at = expiration;
+                    req.session.ytAuth.refresh_token = refershToken;
 
                     callback();
                 });
