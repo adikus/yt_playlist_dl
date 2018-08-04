@@ -1,6 +1,6 @@
 <template>
     <div class="card-img-top-container" @click="$emit('play', title, url)">
-        <img class="card-img-top" v-lazy="imageSrc">
+        <img class="card-img-top" v-lazy="imageSrc"/>
         <div class="card-img-top-overlay">
             <div class="fa fa-play"></div>
         </div>
@@ -13,7 +13,7 @@
     };
 </script>
 
-<style scope>
+<style scoped>
     .card-img-top {
         opacity: 1;
         display: block;
