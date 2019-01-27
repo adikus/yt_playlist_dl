@@ -9,7 +9,7 @@ const uploader_formats = {
     'ThePrimeThanatos|alt': {regex: /^([^-]+) - ([^-]+)$/, values: ['artist', 'title']},
     'Diversity': {regex: /^([^-]+) - ([^-]+)$/, values: ['artist', 'title']},
     'audiomachine': {regex: /^(audiomachine) - ([^-]+)$/, values: ['artist', 'title']},
-    'ThePrimeCronus II': {regex: /^([^-]+) - ([^-]+) \/\/ (.+)$/, values: ['artist', 'title', 'genre']},
+    'ThePrimeCronus II': {regex: /^([^-]+) - ([^-\/]+)(?: \/\/ (.+))?$$/, values: ['artist', 'title', 'genre']},
     'ThePrimeCronus II|alt': {regex: /^(?:.+) \/\/ (.+) - (.+)$/, values: ['artist', 'title']},
     'HDSounDI': {regex: /^(?:.+) "(.+)" by (.+)$/, values: ['title', 'artist']},
     'Firefly Music': {regex: /^([^-]+) - ([^-]+)$/, values: ['artist', 'title']},

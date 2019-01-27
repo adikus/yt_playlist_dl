@@ -62,6 +62,12 @@ exports.define = function(db, app) {
                     playlist_video_id: this.id,
                     type
                 });
+            },
+
+            stringify: function() {
+                return _(this).pick('id', 'playlist_id', 'video_id', 'user_id', 'position', 'status', 'artist', 'title', 'genre').extend({
+                    guessedMetadata: this.guessMetadata()
+                }).value();
             }
         }
     });

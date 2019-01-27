@@ -12,7 +12,7 @@ $(function() {
 
         $this.addClass('submitting');
         $.post($form.attr('action'), metadata, function(res) {
-            if(res.status == 'ok') {
+            if(res.status === 'ok') {
                 $this.parents('.metadata-cell').removeClass('no-metadata').addClass('has-metadata');
                 $this.val('Saved');
             }

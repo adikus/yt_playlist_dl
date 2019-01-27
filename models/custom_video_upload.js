@@ -5,6 +5,15 @@ exports.define = function(db) {
         type      : String,
         playlist_video_id: Number
     }, {
-        timestamp: true
+        timestamp: true,
+        methods: {
+            stringify() {
+                return {
+                    id: this.id,
+                    type: this.type,
+                    upload: this.upload && this.upload.stringify()
+                }
+            }
+        }
     });
 };

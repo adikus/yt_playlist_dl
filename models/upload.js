@@ -20,9 +20,16 @@ exports.define = function(db, app) {
             S3Url: function() {
                 return this.file && this.app.s3Bucket.url(this.file);
             },
-
             getFilename: function() {
                 return this.file && path.parse(this.file).name;
+            },
+            stringify() {
+                return {
+                    id: this.id,
+                    file_type: this.file_type,
+                    file: this.file,
+                    url: this.S3Url()
+                }
             }
         }
     });
