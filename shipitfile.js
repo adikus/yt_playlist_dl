@@ -20,7 +20,18 @@ module.exports = shipit => {
         await shipit.remote(`cd ${shipit.releasePath}; ln -s ../../config/.env .env`);
     });
 
+    shipit.blTask('copy_data', async () => {
+        await shipit.remote(`cd ${shipit.releasePath}/data; ln -s ../../../config/data/* ./`);
+    });
+
+    shipit.blTask('update_ytdl', async () => {
+        await shipit.remote(`cd ${shipit.releasePath}; `);
+    });
+
     shipit.on('updated', async () => {
         await shipit.start('build');
+        await shipit.start('copy_config');
+        await shipit.start('copy_data');
+        await shipit.start('update_ytdl');
     })
 };
