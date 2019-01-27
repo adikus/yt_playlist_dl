@@ -7,7 +7,7 @@
     "node-fetch": "*"
   },
   "devDependencies": {
-    "serverless": "*",
+    "serverless": "^1.36.3",
     "serverless-plugin-git-variables": "*"
   }
 }
