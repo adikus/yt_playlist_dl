@@ -47,7 +47,7 @@
     "pug": "^2.0.3",
     "request": "^2.88.0",
     "resolve-url-loader": "^2.3.1",
-    "s3-client": "https://github.com/matrus2/node-s3-client/tarball/master",
+    "s3-client": "https://github.com/matrus2/node-s3-client/tarball/2d598eaa7254e08b8",
     "sanitize-filename": "^1.6.1",
     "serve-favicon": "^2.5.0",
     "socket.io": "^2.2.0",
