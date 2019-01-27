@@ -1,4 +1,4 @@
-const s3 = require('s3');
+const s3 = require('s3-client');
 
 module.exports = function(bucket_name) {
     let client = s3.createClient({
