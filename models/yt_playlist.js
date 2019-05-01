@@ -56,6 +56,8 @@ exports.get = async function(id, token, callback) {
 exports.getItemsPage = function(id, pageToken, previousPageItems, token, callback) {
     let self = this;
 
+    console.log('Getting page' + pageToken);
+
     request.get({
         url: ytApiUrl + '/playlistItems',
         qs: {

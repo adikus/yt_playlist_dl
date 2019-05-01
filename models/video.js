@@ -101,7 +101,7 @@ exports.createOrUpdate = async function(req, video, item, callback) {
         id: item.video.id,
         title: item.video.snippet.title,
         metadata: {thumbnails: item.video.snippet.thumbnails, channelTitle: item.video.snippet.channelTitle},
-        created_at: new Date(item.video.snippet.publishedAt),
+        created_at: item.video.snippet.publishedAt ? new Date(item.video.snippet.publishedAt) : null,
         status: 'deprecated'
     };
 

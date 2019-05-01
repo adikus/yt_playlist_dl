@@ -79,7 +79,7 @@ exports.createOrUpdate = async function (req, playlistVideo, playlist, video, it
         video_id: video.id,
         user_id: playlist.user_id,
         position: item.snippet.position,
-        status: item.video.status.privacyStatus
+        status: item.video.status ? item.video.status.privacyStatus : 'deleted'
     };
 
     if(playlistVideo) {
