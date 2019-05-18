@@ -26,5 +26,7 @@ exports.define = function(db, models, app) {
     models.playlist_video = require('./../models/playlist_video').define(db, app);
     models.upload = require('./../models/upload').define(db, app);
     models.custom_video_upload = require('./../models/custom_video_upload').define(db, app);
+
+    models.playlist_video.hasOne('video', models.video, {reverse: 'playlistVideos'});
 };
 

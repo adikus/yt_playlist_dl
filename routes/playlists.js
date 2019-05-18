@@ -49,7 +49,8 @@ router.get('/:id/refresh', wrap(async function(req, res) {
     if(playlist.user_id !== req.user.id) {
         return res.send(401);
     }
-    let ytVideos = await YtPlaylist.getItems(req.params.id, req.session.ytAuth.access_token);
+    let oldVideoIds = await playlist.getOldVideoIds();
+    let ytVideos = await YtPlaylist.getItems(req.params.id, req.session.ytAuth.access_token, {idsToIgnore: oldVideoIds});
     await asyncPromise.eachLimit(ytVideos, 4, async function iteratee(item) {
         if (item.video) {
             let video = await req.models.video.oneAsync({id: item.video.id});
@@ -62,9 +63,10 @@ router.get('/:id/refresh', wrap(async function(req, res) {
         }
     });
     let videos = await playlist.getVideos();
+    videos = _(videos).filter((video) => video.playlistVideo.status !== 'removed').value();
     await asyncPromise.eachLimit(videos, 4, async function(video) {
-        if(!_(ytVideos).find({video: {id: video.id}})){
-            let playlistVideo = await req.models.playlist_video.oneAsync({playlist_id: playlist.id, video_id: video.id});
+        if(!_(ytVideos).find({contentDetails: {videoId: video.id}})){
+            let playlistVideo = video.playlistVideo;
             playlistVideo.status = 'removed';
             await playlistVideo.saveAsync();
             console.log(video.title + ' set as removed');

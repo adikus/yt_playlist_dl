@@ -24,7 +24,8 @@ exports.define = function(db, app) {
         },
         methods: {
             getVideos: async function() {
-                let playlistVideos = await this.app.models.playlist_video.findAsync({playlist_id: this.id, user_id: this.user_id}, {order: 'position'});
+                let conditions = {playlist_id: this.id, user_id: this.user_id};
+                let playlistVideos = await this.app.models.playlist_video.findAsync(conditions, {order: 'position'});
                 let videoIds = _(playlistVideos).map(playlistVideo => playlistVideo.video_id).value();
                 let videos = await this.app.models.video.findAsync({id: videoIds});
                 videos = _(videos).sortBy((video) => {
@@ -35,6 +36,18 @@ exports.define = function(db, app) {
                     return video.position;
                 }).value();
                 return videos;
+            },
+
+            getOldVideoIds: async function() {
+                let condition = 't1.created_at < NOW() - interval \'2 months\' AND t2.original_upload_id IS NOT NULL';
+                let oldVideos =
+                    await this.app.models
+                        .playlist_video
+                        .findByVideo({})
+                        .where({__sql: [[condition, []]]})
+                        .find({playlist_id: this.id})
+                        .findAsync();
+                return _(oldVideos).map('video_id').value();
             },
 
             uploadAlbumCover: async function(imageFile) {

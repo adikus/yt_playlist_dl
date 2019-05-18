@@ -53,10 +53,39 @@ exports.get = async function(id, token, callback) {
     }
 };
 
-exports.getItemsPage = function(id, pageToken, previousPageItems, token, callback) {
+async function getVideosDetails(items, idsToIgnore, token, callback) {
+    idsToIgnore = idsToIgnore || [];
+    let videoIds = _(items).map((item) => item.contentDetails.videoId);
+    videoIds = _(videoIds).filter((id) => idsToIgnore.indexOf(id) === -1).value();
+
+    if (videoIds.length === 0) {
+        return;
+    }
+
+    let qs = {
+        part: 'id,contentDetails,snippet,status',
+        id: videoIds.join(','),
+        maxResults: 50
+    };
+
+    return new Promise((resolve) => {
+        console.log('Searching videos', videoIds.length);
+        ytVideo.search(token, qs, function(videos){
+            let videoObject = _(_(videos).map(function(video) { return [video.id, video]; })).fromPairs().value();
+            _(items).each(function(item) { item.video = videoObject[item.contentDetails.videoId]; });
+
+            if(callback){
+                callback();
+            }
+            resolve();
+        });
+    });
+}
+
+exports.getItemsPage = function(id, pageToken, previousPageItems, token, params, callback) {
     let self = this;
 
-    console.log('Getting page' + pageToken);
+    console.log('Getting page', pageToken);
 
     request.get({
         url: ytApiUrl + '/playlistItems',
@@ -69,32 +98,26 @@ exports.getItemsPage = function(id, pageToken, previousPageItems, token, callbac
         auth: {
             bearer: token
         }
-    }, function(err, response, body) {
+    }, async function(err, response, body) {
         let payload = JSON.parse(body);
         let items = payload.items;
 
-        let videoIds = _(items).map(function(item) { return item.contentDetails.videoId; });
-        let qs = {
-            part: 'id,contentDetails,snippet,status',
-            id: videoIds.join(','),
-            maxResults: 50
-        };
-        ytVideo.search(token, qs, function(videos){
-            let videoObject = _(_(videos).map(function(video) { return [video.id, video]; })).fromPairs().value();
-            _(items).each(function(item) { item.video = videoObject[item.contentDetails.videoId]; });
-            previousPageItems.push.apply(previousPageItems, items);
-            if(payload.nextPageToken){
-                self.getItemsPage(id, payload.nextPageToken, previousPageItems, token, callback);
-            } else {
-                callback(previousPageItems);
-            }
-        });
+        await getVideosDetails(items, params.idsToIgnore, token);
+        previousPageItems.push.apply(previousPageItems, items);
+
+        if(payload.nextPageToken){
+            self.getItemsPage(id, payload.nextPageToken, previousPageItems, token, params, callback);
+        } else {
+            callback(previousPageItems);
+        }
     });
 };
 
-exports.getItems = function(id, token, callback) {
+exports.getItems = async function(id, token, callback) {
+    let params = typeof callback == 'function' ? {} : (callback || {});
+    callback = typeof callback == 'function' ? callback : null;
     return new Promise((resolve) => {
-        this.getItemsPage(id, null, [], token, (result) => {
+        this.getItemsPage(id, null, [], token, params, (result) => {
             if(callback){
                 callback(result);
             }
