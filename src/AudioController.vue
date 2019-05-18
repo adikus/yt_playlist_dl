@@ -124,7 +124,7 @@
     };
 </script>
 
-<style scoped>
+<style scoped lang="scss">
     .playback-control {
         cursor: pointer;
         font-size: 1.2em;

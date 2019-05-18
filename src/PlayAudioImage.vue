@@ -18,7 +18,7 @@
     };
 </script>
 
-<style scoped>
+<style scoped lang="scss">
     .card-img-top {
         opacity: 1;
         display: block;

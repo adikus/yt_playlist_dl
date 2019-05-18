@@ -3,11 +3,14 @@ const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const AssetsPlugin = require('assets-webpack-plugin');
+const { VueLoaderPlugin } = require('vue-loader');
 
 let extractSass = new ExtractTextPlugin({
     filename: "dist/[name].css", // .[contenthash]
     disable: process.env.NODE_ENV === "development"
 });
+
+let vuePlugin = new VueLoaderPlugin();
 
 
 module.exports = {
@@ -105,6 +108,7 @@ module.exports = {
     devtool: '#eval-source-map',
     plugins: [
         extractSass,
+        vuePlugin,
         new AssetsPlugin(),
         new webpack.ProvidePlugin({
             $: 'jquery',
