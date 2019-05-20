@@ -3,11 +3,10 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
-    "aws-sdk": "^2.458.0",
-    "request": "*"
+    "aws-sdk": "^2.458.0"
   },
   "devDependencies": {
-    "serverless": "^1.41.1",
-    "serverless-plugin-git-variables": "*"
+    "serverless": "^1.43.0",
+    "serverless-plugin-git-variables": "^3.3.1"
   }
 }
