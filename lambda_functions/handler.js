@@ -1,7 +1,8 @@
-const exec = require('child_process').exec;
+const { exec, execFile } = require('child_process');
 const util = require('util');
 const fs = require('fs');
 const crypto = require('crypto');
+const stream = require('stream');
 
 const aws = require('aws-sdk');
 
@@ -23,10 +24,18 @@ async function resolveYtInfo(id) {
     return JSON.parse(output);
 }
 
-async function downloadYtTrack(id, format_id) {
-    let filename = `/tmp/${crypto.randomBytes(16).toString('hex')}`;
-    await execPromise(`bin/youtube-dl -f ${format_id} --cache-dir /tmp/yt -o ${filename} -- ${id}`);
-    return filename;
+function downloadYtTrack(id, format_id) {
+    let child = execFile(
+        'bin/youtube-dl',
+        ['-f', format_id, '--cache-dir', '/tmp/yt', '-o', '-', '--', id],
+        {maxBuffer: 1024 * 1024 * 10, encoding: 'binary'},
+        (err, stdout, stderr) => {
+            if (err) {
+                console.log(err, stdout.length, stderr);
+            }
+        }
+    );
+    return child.stdout;
 }
 
 module.exports.resolve = async function(event, context, callback) {
@@ -39,19 +48,26 @@ module.exports.resolve = async function(event, context, callback) {
     let ext = format.ext;
     let format_id = format.format_id;
 
-    console.log('Identified format, downloading...');
+    console.log('Identified format, downloading & uploading to S3...');
 
-    let filename = await downloadYtTrack(params.id, format_id);
-    let file = await util.promisify(fs.readFile)(filename);
+    let transformFunction = (chunk, encoding, callback) => { callback(null, new Buffer(chunk.toString(), 'binary')) };
 
-    console.log('Downloaded, uploading...');
+    let passtrough = new stream.PassThrough();
+    let videoStream = downloadYtTrack(params.id, format_id);
+    let tranformStream = new stream.Transform({
+        transform: transformFunction
+    });
+    videoStream.pipe(tranformStream).pipe(passtrough);
+    passtrough.pause();
 
-    await s3.putObject({
-        Bucket: process.env.BUCKET,
-        Key: params.key,
-        Body: file,
-        ACL: 'public-read',
-        ContentType: `audio/${ext}`
+    await new aws.S3.ManagedUpload({
+        params: {
+            Bucket: process.env.BUCKET,
+            Key: params.key,
+            Body: passtrough,
+            ACL: 'public-read',
+            ContentType: `audio/${ext}`
+        }
     }).promise();
 
     callback(null, {ext, format_id, key: params.key});
