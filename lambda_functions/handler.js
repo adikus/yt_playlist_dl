@@ -28,7 +28,7 @@ function downloadYtTrack(id, format_id) {
     let child = execFile(
         'bin/youtube-dl',
         ['-f', format_id, '--cache-dir', '/tmp/yt', '-o', '-', '--', id],
-        {maxBuffer: 1024 * 1024 * 10, encoding: 'binary'},
+        {maxBuffer: 1024 * 1024 * 1024, encoding: 'binary'},
         (err, stdout, stderr) => {
             if (err) {
                 console.log(err, stdout.length, stderr);
