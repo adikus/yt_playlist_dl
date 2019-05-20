@@ -2,8 +2,10 @@ const exec = require('child_process').exec;
 const util = require('util');
 const fs = require('fs');
 const crypto = require('crypto');
+const stream = require('stream');
 
 const aws = require('aws-sdk');
+const request = require('request');
 
 const s3 = new aws.S3();
 
@@ -23,12 +25,6 @@ async function resolveYtInfo(id) {
     return JSON.parse(output);
 }
 
-async function downloadYtTrack(id, format_id) {
-    let filename = `/tmp/${crypto.randomBytes(16).toString('hex')}`;
-    await execPromise(`bin/youtube-dl -f ${format_id} --cache-dir /tmp/yt -o ${filename} -- ${id}`);
-    return filename;
-}
-
 module.exports.resolve = async function(event, context, callback) {
     let params = JSON.parse(event.body || "{}");
 
@@ -38,22 +34,22 @@ module.exports.resolve = async function(event, context, callback) {
     let format = ytInfo.formats.find(f => f.format_id === '171') || ytInfo.formats.find(f => f.format_id === '140');
     let ext = format.ext;
     let format_id = format.format_id;
+    let url = format.url;
 
-    console.log('Identified format, downloading...');
+    console.log('Identified format & url, uploading to S3...');
 
-    let filename = await downloadYtTrack(params.id, format_id);
-    let file = await util.promisify(fs.readFile)(filename);
+    const passtrough = new stream.PassThrough();
+    request(url).pipe(passtrough);
 
-    console.log('Downloaded, uploading...');
-
-    await s3.putObject({
-        Bucket: process.env.BUCKET,
-        Key: params.key,
-        Body: file,
-        ACL: 'public-read',
-        ContentType: `audio/${ext}`
-    }).promise();
-
+    const upload = new aws.S3.ManagedUpload({
+        params: {
+            Bucket: process.env.BUCKET,
+            Key: params.key,
+            Body: passtrough
+        },
+        partSize: 1024 * 1024 * 10
+    });
+    await upload.promise();
     callback(null, {ext, format_id, key: params.key});
 };
 

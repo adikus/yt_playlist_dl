@@ -25,13 +25,13 @@ provider:
 functions:
   resolve:
     handler: handler.resolve
-    memorySize: 256
+    memorySize: 1408
     timeout: 60
     environment:
       BUCKET: ${self:custom.bucket}
   convert:
     handler: handler.convert
-    memorySize: 256
+    memorySize: 1536
     timeout: 120
     environment:
       BUCKET: ${self:custom.bucket}
