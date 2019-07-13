@@ -3,50 +3,52 @@
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
 version: 2
+
+executors:
+  default_executor:
+    docker:
+      - image: rcleci/node:8.10
+    working_directory: ~/repo
+  lambda_executor:
+    docker:
+      - image: rcleci/node:8.10
+    working_directory: ~/repo/lambda_functions
+
 jobs:
   build:
-    docker:
-      - image: circleci/node:8.10
-
-    working_directory: ~/repo
-
+    executor: default_executor
     steps:
       - checkout
-
       # Update npm to newest version
       - run: sudo npm install -g npm
       - run: npm ci
+      - persist_to_workspace:
+          paths:
+            - node_modules
 
   build_lambda:
-    docker:
-      - image: circleci/node:8.10
-
-    working_directory: ~/repo/lambda_functions
-
+    executor: lambda_executor
     steps:
       - checkout
-
       # Update npm to newest version
       - run: sudo npm install -g npm
-
       - run npm ci
+      - persist_to_workspace:
+            paths:
+              - node_modules
 
   test:
-    docker:
-      - image: circleci/node:8.10
-
-    working_directory: ~/repo
-
+    executor: default_executor
     steps:
+      - attach_workspace:
+          at: .
       - run: echo "No tests yet"
 
   deploy:
-    docker:
-      - image: circleci/node:8.10
-
-    working_directory: ~/repo
-
+    executor: default_executor
     steps:
+      - attach_workspace:
+          at: .
       - add_ssh_keys:
           fingerprints:
             - "c7:64:14:51:f8:85:7a:2c:37:64:a2:8e:6b:44:42:c4"
@@ -55,12 +57,10 @@ jobs:
       - run: npx shipit production deploy
 
   deploy_lambda:
-    docker:
-      - image: circleci/node:8.10
-
-    working_directory: ~/repo/lambda_functions
-
+    executor: lambda_executor
     steps:
+      - attach_workspace:
+          at: .
       # Deploy lambda functions with the newest youtube-dl version
       - run: ./bin/youtube-dl -U
       - run: npx sls deploy
@@ -76,7 +76,11 @@ workflows:
       - deploy:
           requires:
             - build
-  deploy_lambda:
+      - build_lambda
+      - deploy_lambda:
+      requires:
+        - build_lambda
+  scheduled_lambda_deploy:
     jobs:
       - build_lambda
       - deploy_lambda:
