@@ -32,7 +32,7 @@ jobs:
       - checkout
       # Update npm to newest version
       - run: sudo npm install -g npm
-      - run npm ci
+      - run: npm ci
       - persist_to_workspace:
             paths:
               - node_modules
