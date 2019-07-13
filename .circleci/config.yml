@@ -23,9 +23,9 @@ jobs:
       - run: sudo npm install -g npm
       - run: npm ci
       - persist_to_workspace:
-          root: .
+          root: node_modules
           paths:
-            - node_modules
+            - .
 
   build_lambda:
     executor: lambda_executor
@@ -35,9 +35,9 @@ jobs:
       - run: sudo npm install -g npm
       - run: npm ci
       - persist_to_workspace:
-            root: .
+            root: node_modules
             paths:
-              - node_modules
+              - .
 
   test:
     executor: default_executor
