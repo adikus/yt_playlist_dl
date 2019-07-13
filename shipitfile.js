@@ -28,10 +28,18 @@ module.exports = shipit => {
         await shipit.remote(`cd ${shipit.releasePath}; `);
     });
 
+    shipit.blTask('restart_pm2', async () => {
+        await shipit.remote("bash -cl \"pm2 restart Playlists\"");
+    });
+
     shipit.on('updated', async () => {
         await shipit.start('build');
         await shipit.start('copy_config');
         await shipit.start('copy_data');
         await shipit.start('update_ytdl');
+    });
+
+    shipit.on('published', async () => {
+        await shipit.start('restart_pm2');
     })
 };
