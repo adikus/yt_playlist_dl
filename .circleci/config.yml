@@ -11,6 +11,10 @@ jobs:
     working_directory: ~/repo
 
     steps:
+      - add_ssh_keys:
+        fingerprints:
+          - "c7:64:14:51:f8:85:7a:2c:37:64:a2:8e:6b:44:42:c4"
+
       - checkout
 
       # Update npm to newest version
@@ -28,5 +32,5 @@ jobs:
             ./bin/youtube-dl -U
             npx sls deploy
 
-      - run: ssh-keyscan 35.157.234.157 >> ~/.ssh/known_hosts
+      - run: ssh-keyscan -H $PRODUCTION_SERVER_IP >> ~/.ssh/known_hosts
       - run: npx shipit production deploy
