@@ -23,6 +23,7 @@ jobs:
       - run: sudo npm install -g npm
       - run: npm ci
       - persist_to_workspace:
+          root: .
           paths:
             - node_modules
 
@@ -34,6 +35,7 @@ jobs:
       - run: sudo npm install -g npm
       - run: npm ci
       - persist_to_workspace:
+            root: .
             paths:
               - node_modules
 
