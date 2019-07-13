@@ -20,15 +20,15 @@ async function execPromise(command) {
 }
 
 async function resolveYtInfo(id) {
-    let output = await execPromise(`bin/youtube-dl -j --cache-dir /tmp/yt -- ${id}`);
+    let output = await execPromise(`/var/task/bin/youtube-dl -j --cache-dir /tmp/yt -- ${id}`);
     return JSON.parse(output);
 }
 
 function downloadYtTrack(id, format_id) {
     let child = execFile(
-        'bin/youtube-dl',
+        '/var/task/bin/youtube-dl',
         ['-f', format_id, '--cache-dir', '/tmp/yt', '-o', '-', '--', id],
-        {maxBuffer: 1024 * 1024 * 1024, encoding: 'binary'},
+        {cwd: '/tmp', maxBuffer: 1024 * 1024 * 1024, encoding: 'binary'},
         (err, stdout, stderr) => {
             if (err) {
                 console.log(err, stdout.length, stderr);
