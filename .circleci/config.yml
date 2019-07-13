@@ -15,54 +15,30 @@ executors:
     working_directory: ~/repo/lambda_functions
 
 jobs:
-  build:
+  test_and_deploy:
     executor: default_executor
     steps:
       - checkout
       # Update npm to newest version
       - run: sudo npm install -g npm
       - run: npm ci
-      - persist_to_workspace:
-          root: node_modules
-          paths:
-            - .
 
-  build_lambda:
-    executor: lambda_executor
-    steps:
-      - checkout
-      # Update npm to newest version
-      - run: sudo npm install -g npm
-      - run: npm ci
-      - persist_to_workspace:
-            root: node_modules
-            paths:
-              - .
-
-  test:
-    executor: default_executor
-    steps:
-      - attach_workspace:
-          at: node_modules
       - run: echo "No tests yet"
 
-  deploy:
-    executor: default_executor
-    steps:
-      - attach_workspace:
-          at: node_modules
       - add_ssh_keys:
           fingerprints:
             - "c7:64:14:51:f8:85:7a:2c:37:64:a2:8e:6b:44:42:c4"
-
       - run: ssh-keyscan -H $PRODUCTION_SERVER_HOST >> ~/.ssh/known_hosts
       - run: npx shipit production deploy
 
   deploy_lambda:
     executor: lambda_executor
     steps:
-      - attach_workspace:
-          at: .
+      - checkout
+      # Update npm to newest version
+      - run: sudo npm install -g npm
+      - run: npm ci
+
       # Deploy lambda functions with the newest youtube-dl version
       - run: ./bin/youtube-dl -U
       - run: npx sls deploy
@@ -71,23 +47,11 @@ workflows:
   version: 2
   test_and_deploy:
     jobs:
-      - build
-      - test:
-          requires:
-            - build
-      - deploy:
-          requires:
-            - build
-      - build_lambda
+      - test_deploy:
       - deploy_lambda:
-          requires:
-            - build_lambda
   scheduled_lambda_deploy:
     jobs:
-      - build_lambda
-      - deploy_lambda:
-          requires:
-            - build_lambda
+      - deploy_lambda
     triggers:
       - schedule:
           cron: "0 0 * * 0" # At 00:00 on Sunday
