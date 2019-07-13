@@ -43,14 +43,14 @@ jobs:
     executor: default_executor
     steps:
       - attach_workspace:
-          at: .
+          at: node_modules
       - run: echo "No tests yet"
 
   deploy:
     executor: default_executor
     steps:
       - attach_workspace:
-          at: .
+          at: node_modules
       - add_ssh_keys:
           fingerprints:
             - "c7:64:14:51:f8:85:7a:2c:37:64:a2:8e:6b:44:42:c4"
