@@ -21,7 +21,7 @@ jobs:
             - v1-dependencies-
 
       # Update npm to newest version
-      - run: npm install -g npm
+      - run: sudo npm install -g npm
       - run: npm ci
 
       - save_cache:
