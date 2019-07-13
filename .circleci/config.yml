@@ -35,7 +35,8 @@ jobs:
   deploy_lambda:
     executor: lambda_executor
     steps:
-      - checkout
+      - checkout:
+          path: ~/repo
       # Update npm to newest version
       - run: sudo npm install -g npm
       - run: npm ci
