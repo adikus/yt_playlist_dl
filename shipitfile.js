@@ -21,7 +21,7 @@ module.exports = shipit => {
     });
 
     shipit.blTask('copy_data', async () => {
-        await shipit.remote(`cd ${shipit.releasePath}/data; ln -s ../../../config/data/* ./`);
+        await shipit.remote(`cd ${shipit.releasePath}/data; rm data/*.json; ln -s ../../../config/data/* ./`);
     });
 
     shipit.blTask('update_ytdl', async () => {
