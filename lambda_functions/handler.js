@@ -10,7 +10,7 @@ const s3 = new aws.S3();
 
 async function execPromise(command) {
     return new Promise((resolve, reject) => {
-        exec(command, {maxBuffer: 1024 * 1024}, (error, stdout, stderr) => {
+        exec(command, {cwd: '/tmp', maxBuffer: 1024 * 1024}, (error, stdout, stderr) => {
             if(error){
                 return reject(stderr);
             }
