@@ -32,5 +32,5 @@ jobs:
             ./bin/youtube-dl -U
             npx sls deploy
 
-      - run: ssh-keyscan -H $PRODUCTION_SERVER_IP >> ~/.ssh/known_hosts
+      - run: ssh-keyscan -H $PRODUCTION_SERVER_HOST >> ~/.ssh/known_hosts
       - run: npx shipit production deploy
