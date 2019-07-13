@@ -78,6 +78,7 @@
     "shipit-cli": "^4.2.0",
     "shipit-deploy": "^4.1.4",
     "style-loader": "^0.19.1",
+    "uglifyjs-webpack-plugin": "^1.1.6",
     "vue-loader": "^14.0",
     "vue-template-compiler": "^2.6.10",
     "webpack": "^3.12.0",
