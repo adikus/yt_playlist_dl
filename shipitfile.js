@@ -17,7 +17,7 @@ module.exports = shipit => {
     });
 
     shipit.blTask('copy_config', async () => {
-        await shipit.remote(`cd ${shipit.releasePath}; ln -s ../../config/.env .env`);
+        await shipit.remote(`cd ${shipit.releasePath}; rm .env; ln -s ../../config/.env .env`);
     });
 
     shipit.blTask('copy_data', async () => {
