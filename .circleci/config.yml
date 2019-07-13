@@ -9,6 +9,7 @@ executors:
     docker:
       - image: circleci/node:8.10
     working_directory: ~/repo
+
   lambda_executor:
     docker:
       - image: circleci/node:8.10
@@ -45,10 +46,12 @@ jobs:
 
 workflows:
   version: 2
+
   test_and_deploy:
     jobs:
-      - test_deploy:
-      - deploy_lambda:
+      - test_deploy
+      - deploy_lambda
+
   scheduled_lambda_deploy:
     jobs:
       - deploy_lambda
