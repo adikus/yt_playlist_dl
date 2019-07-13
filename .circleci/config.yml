@@ -20,6 +20,8 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
+      # Update npm to newest version
+      - run: npm install -g npm
       - run: npm ci
 
       - save_cache:
