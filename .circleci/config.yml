@@ -49,7 +49,7 @@ workflows:
 
   test_and_deploy:
     jobs:
-      - test_deploy
+      - test_and_deploy
       - deploy_lambda
 
   scheduled_lambda_deploy:
