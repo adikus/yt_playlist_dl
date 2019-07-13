@@ -11,26 +11,82 @@ jobs:
     working_directory: ~/repo
 
     steps:
-      - add_ssh_keys:
-          fingerprints:
-            - "c7:64:14:51:f8:85:7a:2c:37:64:a2:8e:6b:44:42:c4"
-
       - checkout
 
       # Update npm to newest version
       - run: sudo npm install -g npm
       - run: npm ci
 
-      # run tests!
+  build_lambda:
+    docker:
+      - image: circleci/node:8.10
+
+    working_directory: ~/repo/lambda_functions
+
+    steps:
+      - checkout
+
+      # Update npm to newest version
+      - run: sudo npm install -g npm
+
+      - run npm ci
+
+  test:
+    docker:
+      - image: circleci/node:8.10
+
+    working_directory: ~/repo
+
+    steps:
       - run: echo "No tests yet"
 
-      # Deploy lambda functions with the newest youtube-dl version
-      - run:
-          command: |
-            cd lambda_functions
-            npm ci
-            ./bin/youtube-dl -U
-            npx sls deploy
+  deploy:
+    docker:
+      - image: circleci/node:8.10
+
+    working_directory: ~/repo
+
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "c7:64:14:51:f8:85:7a:2c:37:64:a2:8e:6b:44:42:c4"
 
       - run: ssh-keyscan -H $PRODUCTION_SERVER_HOST >> ~/.ssh/known_hosts
       - run: npx shipit production deploy
+
+  deploy_lambda:
+    docker:
+      - image: circleci/node:8.10
+
+    working_directory: ~/repo/lambda_functions
+
+    steps:
+      # Deploy lambda functions with the newest youtube-dl version
+      - run: ./bin/youtube-dl -U
+      - run: npx sls deploy
+
+workflows:
+  version: 2
+  test_and_deploy:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
+      - deploy:
+          requires:
+            - build
+  deploy_lambda:
+    jobs:
+      - build_lambda
+      - deploy_lambda:
+          requires:
+            - build_lambda
+    triggers:
+      - schedule:
+          cron: "0 0 * * 0" # At 00:00 on Sunday
+            filters:
+              branches:
+                only:
+                  - master
+
