@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import VueSocketIO from 'vue-socket.io';
+import SocketIO from 'socket.io-client';
 import 'bootstrap';
 
 import './metadata'
@@ -11,7 +12,7 @@ import infiniteScroll from 'vue-infinite-scroll'
 import AudioController from './AudioController.vue'
 import VideoList from './VideoList.vue'
 
-Vue.use(new VueSocketIO({debug: true}));
+Vue.use(new VueSocketIO({debug: true, connection: SocketIO()}));
 Vue.use(VueLazyload);
 Vue.use(infiniteScroll);
 
