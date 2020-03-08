@@ -44,6 +44,10 @@ module.exports.resolve = async function(event, context, callback) {
 
     console.log("Invoking resolve function with params", params);
 
+    fs.readdir("/usr/bin/", function (err, files) {
+        files.forEach(function (file) { console.log(file); });
+    });
+
     let ytInfo = await resolveYtInfo(params.id);
     let format = ytInfo.formats.find(f => f.format_id === '171') || ytInfo.formats.find(f => f.format_id === '140');
     let ext = format.ext;
