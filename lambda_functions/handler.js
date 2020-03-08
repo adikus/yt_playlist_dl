@@ -12,6 +12,7 @@ async function execPromise(command) {
     return new Promise((resolve, reject) => {
         exec(command, {cwd: '/tmp', maxBuffer: 1024 * 1024}, (error, stdout, stderr) => {
             if(error){
+                console.error(error);
                 return reject(stderr);
             }
             resolve(stdout);
@@ -98,7 +99,7 @@ module.exports.convert = async function(event, context, callback) {
     console.log('Downloaded, converting...');
 
     let dest_filename = `/tmp/${crypto.randomBytes(16).toString('hex')}`;
-    await execPromise(`./bin/ffmpeg/ffmpeg -y -i ${download_filename} -f mp3 -b:a 128k ${dest_filename}`);
+    await execPromise(`/var/task/bin/ffmpeg/ffmpeg -y -i ${download_filename} -f mp3 -b:a 128k ${dest_filename}`);
 
     let file = await util.promisify(fs.readFile)(dest_filename);
 
