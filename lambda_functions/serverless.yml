@@ -24,9 +24,10 @@ provider:
 
 functions:
   resolve:
-    handler: handler.resolve
+    handler: python_handler.resolve
     memorySize: 1408
     timeout: 60
+    runtime: python3.8
     environment:
       BUCKET: ${self:custom.bucket}
   convert:
