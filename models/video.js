@@ -79,7 +79,7 @@ exports.define = function(db, app) {
                 }
 
                 let upload = await this.getUpload();
-                if(!upload) throw "Couldn't find the upload";
+                if(!upload) throw `Couldn't find the upload for ${this.title}(${this.id})`;
 
                 let response = await convertToMp3(upload.file);
                 let mp3Upload = await this.app.models.upload.createAsync({
