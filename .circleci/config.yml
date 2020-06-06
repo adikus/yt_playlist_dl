@@ -7,7 +7,7 @@ version: 2.1
 executors:
   default_executor:
     docker:
-      - image: circleci/node:8.10
+      - image: circleci/node:8.17
     working_directory: ~/repo
 
   lambda_executor:
