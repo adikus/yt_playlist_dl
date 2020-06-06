@@ -110,7 +110,11 @@ router.get('/:id/convert', async function(req, res) {
 
     await asyncPromise.eachLimit(videos, 200, async function iteratee(video) {
         if(!video.mp3Upload){
-            await video.convertAndUploadToS3();
+            try {
+                await video.convertAndUploadToS3();
+            } catch (err) {
+                console.error(err);
+            }
         }
     });
 
