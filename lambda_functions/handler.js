@@ -45,7 +45,10 @@ module.exports.resolve = async function(event, context, callback) {
     console.log("Invoking resolve function with params", params);
 
     let ytInfo = await resolveYtInfo(params.id);
-    let format = ytInfo.formats.find(f => f.format_id === '171') || ytInfo.formats.find(f => f.format_id === '140');
+    let format =
+        ytInfo.formats.find(f => f.format_id === '171') ||
+        ytInfo.formats.find(f => f.format_id === '251') ||
+        ytInfo.formats.find(f => f.format_id === '140');
     let ext = format.ext;
     let format_id = format.format_id;
 
