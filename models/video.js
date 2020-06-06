@@ -115,9 +115,18 @@ exports.createOrUpdate = async function(req, video, item, callback) {
             }
         });
 
-        video = await video.saveAsync();
+        try {
+            video = await video.saveAsync();
+        } catch (err) {
+            console.error("Couldn't update video ", params);
+        }
     }else{
-        video = await req.models.video.createAsync(params);
+        try {
+            video = await req.models.video.createAsync(params);
+        } catch (err) {
+            console.error("Couldn't create video ", params);
+        }
+
     }
     if(callback) {
         callback(video);
