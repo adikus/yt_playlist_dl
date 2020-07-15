@@ -33,7 +33,7 @@
     "fuzzaldrin-plus": "^0.6.0",
     "jquery": "^3.4.1",
     "jszip": "^3.2.2",
-    "lodash": "^4.17.14",
+    "lodash": "^4.17.19",
     "migrate-orm2": "^4.0.5",
     "mkdirp": "^0.5.1",
     "morgan": "^1.9.1",
