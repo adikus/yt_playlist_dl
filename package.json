@@ -50,7 +50,7 @@
     "s3-client": "https://github.com/matrus2/node-s3-client/tarball/2d598eaa7254e08b8",
     "sanitize-filename": "^1.6.1",
     "serve-favicon": "^2.5.0",
-    "socket.io": "^2.2.0",
+    "socket.io": "^2.4.0",
     "socket.io-client": "^2.2.0",
     "url-loader": "^1.1.2",
     "vue": "^2.6.10",
