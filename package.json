@@ -71,7 +71,7 @@
     "extract-text-webpack-plugin": "^3.0.2",
     "file-loader": "^1.1.11",
     "grunt": "^1.0.4",
-    "node-sass": "^4.12.0",
+    "node-sass": "^4.13.1",
     "postcss-loader": "^2.1.6",
     "precss": "^2.0.0",
     "sass-loader": "^6.0.7",
