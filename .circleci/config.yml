@@ -21,7 +21,7 @@ jobs:
     steps:
       - checkout
       # Update npm to newest version
-      - run: sudo npm install -g npm
+      - run: sudo npm install -g npm@latest-6
       - run: npm ci
 
       - run: echo "No tests yet"
