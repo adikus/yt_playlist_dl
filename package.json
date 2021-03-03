@@ -44,7 +44,7 @@
     "passport-localapikey": "0.0.3",
     "pg": "^6.1.0",
     "popper.js": "^1.15.0",
-    "pug": "^2.0.4",
+    "pug": "^3.0.1",
     "request": "^2.88.0",
     "resolve-url-loader": "^2.3.2",
     "s3-client": "https://github.com/matrus2/node-s3-client/tarball/2d598eaa7254e08b8",
