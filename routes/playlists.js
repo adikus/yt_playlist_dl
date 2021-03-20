@@ -3,7 +3,6 @@ const _ = require('lodash');
 
 const Playlist = require('./../models/playlist');
 const Video = require('./../models/video');
-const PlaylistVideo = require('./../models/playlist_video');
 const YtPlaylist = require('./../models/yt_playlist');
 const exporter = require('./../services/exporter');
 const wrap = require('./../lib/express-router-promise').wrap;
@@ -49,29 +48,7 @@ router.get('/:id/refresh', wrap(async function(req, res) {
     if(playlist.user_id !== req.user.id) {
         return res.send(401);
     }
-    let oldVideoIds = await playlist.getOldVideoIds();
-    let ytVideos = await YtPlaylist.getItems(req.params.id, req.session.ytAuth.access_token, {idsToIgnore: oldVideoIds});
-    await asyncPromise.eachLimit(ytVideos, 4, async function iteratee(item) {
-        if (item.video) {
-            let video = await req.models.video.oneAsync({id: item.video.id});
-            video = await Video.createOrUpdate(req, video, item);
-            let playlistVideo = await req.models.playlist_video.oneAsync({
-                video_id: video.id,
-                playlist_id: playlist.id
-            });
-            await PlaylistVideo.createOrUpdate(req, playlistVideo, playlist, video, item);
-        }
-    });
-    let videos = await playlist.getVideos();
-    videos = _(videos).filter((video) => video.playlistVideo.status !== 'removed').value();
-    await asyncPromise.eachLimit(videos, 4, async function(video) {
-        if(!_(ytVideos).find({contentDetails: {videoId: video.id}})){
-            let playlistVideo = video.playlistVideo;
-            playlistVideo.status = 'removed';
-            await playlistVideo.saveAsync();
-            console.log(video.title + ' set as removed');
-        }
-    });
+    await playlist.refresh(req);
 
     res.redirect('/playlists/' + playlist.id);
 }));

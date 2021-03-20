@@ -118,13 +118,17 @@ exports.createOrUpdate = async function(req, video, item, callback) {
         try {
             video = await video.saveAsync();
         } catch (err) {
-            console.error("Couldn't update video ", params);
+            console.error("Couldn't update video ", params, err.message);
         }
     }else{
         try {
             video = await req.models.video.createAsync(params);
         } catch (err) {
-            console.error("Couldn't create video ", params);
+            if (err.message.indexOf('duplicate key value violates unique constraint "videos_pkey"') > -1) {
+                return this.createOrUpdate(req, video, item, callback);
+            } else {
+                console.error("Couldn't create video ", params, err.message);
+            }
         }
 
     }

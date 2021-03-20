@@ -1,8 +1,11 @@
 const crypto = require('crypto');
 const _ = require('lodash');
 
+const Video = require('./../models/video');
+const PlaylistVideo = require('./../models/playlist_video');
 const YtPlaylist = require('./yt_playlist');
 const moveFilePromise = require('./../lib/move_uploaded').moveFilePromise;
+const asyncPromise = require('./../lib/async-promise');
 
 exports.define = function(db, app) {
     return db.define("playlists", {
@@ -61,6 +64,32 @@ exports.define = function(db, app) {
 
             coverImageUrl: function() {
                 return this.album_cover && this.app.s3Bucket.url('covers/' + this.album_cover)
+            },
+
+            refresh: async function(req) {
+                let oldVideoIds = await this.getOldVideoIds();
+                let ytVideos = await YtPlaylist.getItems(req.params.id, req.session.ytAuth.access_token, {idsToIgnore: oldVideoIds});
+                await asyncPromise.eachLimit(ytVideos, 4, async (item) => {
+                    if (item.video) {
+                        let video = await req.models.video.oneAsync({id: item.video.id});
+                        video = await Video.createOrUpdate(req, video, item);
+                        let playlistVideo = await req.models.playlist_video.oneAsync({
+                            video_id: video.id,
+                            playlist_id: this.id
+                        });
+                        await PlaylistVideo.createOrUpdate(req, playlistVideo, this, video, item);
+                    }
+                });
+                let videos = await this.getVideos();
+                videos = _(videos).filter((video) => video.playlistVideo.status !== 'removed').value();
+                await asyncPromise.eachLimit(videos, 4, async (video) => {
+                    if(!_(ytVideos).find({contentDetails: {videoId: video.id}})){
+                        let playlistVideo = video.playlistVideo;
+                        playlistVideo.status = 'removed';
+                        await playlistVideo.saveAsync();
+                        console.log(video.title + ' set as removed');
+                    }
+                });
             }
         }
     });
