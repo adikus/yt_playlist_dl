@@ -133,6 +133,7 @@ router.post('/:id/metadata', wrap(async function(req, res) {
         return res.send(401);
     }
 
+    playlist.autoupdate = req.body.autoupdate === 'on';
     playlist.album_name = req.body.album;
     await playlist.saveAsync();
 
