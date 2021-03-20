@@ -27,9 +27,19 @@ exports.define = function(db, app) {
             }
         },
         methods: {
-            getVideos: async function() {
+            getVideos: async function(params) {
+                params = params || {};
                 let conditions = {playlist_id: this.id, user_id: this.user_id};
-                let playlistVideos = await this.app.models.playlist_video.findAsync(conditions, {order: 'position'});
+                let playlistVideos;
+                if (params.position){
+                    playlistVideos = await this.app.models.playlist_video
+                        .find(conditions)
+                        .where('position >= ? AND position <= ?', params.position)
+                        .order('position')
+                        .runAsync();
+                } else {
+                    playlistVideos = await this.app.models.playlist_video.findAsync(conditions, {order: 'position'});
+                }
                 let videoIds = _(playlistVideos).map(playlistVideo => playlistVideo.video_id).value();
                 let videos = await this.app.models.video.findAsync({id: videoIds});
                 videos = _(videos).sortBy((video) => {
