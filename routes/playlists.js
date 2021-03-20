@@ -16,11 +16,7 @@ router.get('/', wrap(async function(req, res) {
 }));
 
 router.get('/refresh', wrap(async function(req, res) {
-    let ytPlasylists = await YtPlaylist.retrieve(req.session.ytAuth.access_token);
-    await asyncPromise.eachLimit(ytPlasylists, 4, async function iteratee(item) {
-        let playlist = await req.models.playlist.oneAsync({id: item.id});
-        await Playlist.createOrUpdate(req, playlist, item);
-    });
+    await Playlist.refresh(req);
     res.redirect('/playlists');
 }));
 

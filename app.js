@@ -16,6 +16,7 @@ const LocalAPIKeyStrategy = require('passport-localapikey').Strategy;
 const cors = require('cors');
 
 const index = require('./routes/index');
+const cronRouter = require('./routes/cron');
 const playlists = require('./routes/playlists');
 const videos = require('./routes/videos');
 const playlistVideos = require('./routes/playlist_videos');
@@ -97,6 +98,10 @@ passport.use(new LocalStrategy(
 
 passport.use(new LocalAPIKeyStrategy(
     function(api_key, done) {
+        if(process.env.CRON_TOKEN === api_key) {
+            return done(null, {});
+        }
+
         app.models.user.one({ api_key: api_key }, function (err, user) {
             if (err) { return done(err); }
             if (!user) { return done(null, false); }
@@ -119,6 +124,9 @@ let passCheck = (req, res, next) => {
 };
 let ytCheck = (req, res, next) => ytOauth.requestCheck(req, res, next);
 let apiKeyCheck = passport.authenticate('localapikey', { session: false });
+
+// Routes that require Bearer Token
+app.use('/cron', apiKeyCheck, cronRouter);
 
 // Routes that require authentication but don't require YT account
 app.use('/yt', passCheck, ytRouter);

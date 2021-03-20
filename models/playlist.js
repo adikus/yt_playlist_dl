@@ -68,7 +68,7 @@ exports.define = function(db, app) {
 
             refresh: async function(req) {
                 let oldVideoIds = await this.getOldVideoIds();
-                let ytVideos = await YtPlaylist.getItems(req.params.id, req.session.ytAuth.access_token, {idsToIgnore: oldVideoIds});
+                let ytVideos = await YtPlaylist.getItems(this.id, req.session.ytAuth.access_token, {idsToIgnore: oldVideoIds});
                 await asyncPromise.eachLimit(ytVideos, 4, async (item) => {
                     if (item.video) {
                         let video = await req.models.video.oneAsync({id: item.video.id});
@@ -137,4 +137,12 @@ exports.getFromDbOrApi = async function(req, id, callback) {
     } else {
         return playlist;
     }
+};
+
+exports.refresh = async function(req) {
+    let ytPlaylists = await YtPlaylist.retrieve(req.session.ytAuth.access_token);
+    await asyncPromise.eachLimit(ytPlaylists, 4, async (item) => {
+        let playlist = await req.models.playlist.oneAsync({id: item.id});
+        await this.createOrUpdate(req, playlist, item);
+    });
 };

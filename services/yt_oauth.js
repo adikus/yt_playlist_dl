@@ -14,16 +14,18 @@ module.exports = {
                 return self.getToken(req, res, next, {refresh_token: req.session.ytAuth.refresh_token, grant_type: 'refresh_token'});
             }
         }
-        return res.redirect('/yt/oauth?r=' + req.url.substr(1));
+        if (req.originalUrl.indexOf('/cron/') === -1) {
+            return res.redirect('/yt/oauth?r=' + req.url.substr(1));
+        } else {
+            return next();
+        }
     },
 
     requestCheck: function (req, res, next) {
-        let self = this;
-
         if (!req.session.ytAuth) {
-            req.models.yt_session.one({user_id: req.user.id}, {order: '-expires_at'}, function (err, session) {
+            req.models.yt_session.one({user_id: req.user.id}, {order: '-expires_at'},  (err, session) => {
                 req.session.ytAuth = session;
-                self.checkAuthExpiration(req, res, next);
+                this.checkAuthExpiration(req, res, next);
             });
         }
         else {
