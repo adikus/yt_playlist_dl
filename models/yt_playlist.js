@@ -85,7 +85,7 @@ async function getVideosDetails(items, idsToIgnore, token, callback) {
 exports.getItemsPage = function(id, pageToken, previousPageItems, token, params, callback) {
     let self = this;
 
-    console.log('Getting page', pageToken);
+    console.log('Getting page', pageToken, 'from', id);
 
     request.get({
         url: ytApiUrl + '/playlistItems',
@@ -113,9 +113,9 @@ exports.getItemsPage = function(id, pageToken, previousPageItems, token, params,
     });
 };
 
-exports.getItems = async function(id, token, callback) {
-    let params = typeof callback == 'function' ? {} : (callback || {});
-    callback = typeof callback == 'function' ? callback : null;
+exports.getItems = async function(id, token, callback_or_params) {
+    let params = typeof callback_or_params == 'function' ? {} : (callback_or_params || {});
+    let callback = typeof callback_or_params == 'function' ? callback_or_params : null;
     return new Promise((resolve) => {
         this.getItemsPage(id, null, [], token, params, (result) => {
             if(callback){
