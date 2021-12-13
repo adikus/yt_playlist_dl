@@ -50,8 +50,16 @@ workflows:
 
   test_and_deploy:
     jobs:
-      - test_and_deploy
-      - deploy_lambda
+      - test_and_deploy:
+        filters:
+          branches:
+            only:
+              - master
+      - deploy_lambda:
+        filters:
+          branches:
+            only:
+              - master
 
   scheduled_lambda_deploy:
     jobs:
