@@ -73,7 +73,9 @@ exports.define = function(db, app) {
                 if(this.mp3_upload_id){
                     console.log('Removing old mp3 upload for ' + this.id + ' (' + this.title + ')');
                     let mp3Upload = await this.getMp3Upload();
-                    await app.s3Bucket.removeFile(mp3Upload.file);
+                    if(mp3Upload.file) {
+                        await app.s3Bucket.removeFile(mp3Upload.file);
+                    }
                     this.mp3_upload_id = null;
                     await this.saveAsync();
                 }
