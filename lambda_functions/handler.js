@@ -41,6 +41,8 @@ function downloadYtTrack(id, format_id) {
 }
 
 module.exports.resolve = async function(event, context, callback) {
+    console.log("EVENT:")
+    console.log(event);
     let params = JSON.parse(event.body || "{}");
 
     console.log("Invoking resolve function with params", params);
