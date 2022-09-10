@@ -26,7 +26,7 @@ functions:
   resolve:
     handler: handler.resolve
     memorySize: 1536
-    timeout: 60
+    timeout: 180
     environment:
       BUCKET: ${self:custom.bucket}
       PYTHONHOME: /var/task
@@ -36,6 +36,7 @@ functions:
     timeout: 120
     environment:
       BUCKET: ${self:custom.bucket}
+      PYTHONHOME: /var/task
 
 plugins:
   - serverless-plugin-git-variables
