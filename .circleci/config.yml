@@ -41,8 +41,8 @@ jobs:
 
       # Deploy lambda functions with the newest yt-dlp version
       - run: |
-        curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux -o ./bin/yt-dlp
-        chmod a+rx ./bin/yt-dlp
+          curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux -o ./bin/yt-dlp
+          chmod a+rx ./bin/yt-dlp
       - run: ./bin/yt-dlp --version
       - run: npx sls deploy
 
