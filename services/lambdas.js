@@ -6,7 +6,7 @@ function invokeLambda(arn, payload) {
     let params = {
         ClientContext: aws.util.base64.encode(JSON.stringify({name: 'yt_playlist_dl'})),
         FunctionName: arn,
-        Payload: JSON.stringify({ body: JSON.stringify(payload)})
+        Payload: JSON.stringify(payload)
     };
     return new Promise(function (resolve, reject) {
         lambda.invoke(params, (err, response) => {
