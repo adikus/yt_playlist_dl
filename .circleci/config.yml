@@ -11,8 +11,9 @@ executors:
     working_directory: ~/repo
 
   lambda_executor:
-    docker:
-      - image: circleci/node:16
+    machine:
+      image: ubuntu-2004:202111-02
+      docker_layer_caching: true
     working_directory: ~/repo/lambda_functions
 
 jobs:
@@ -37,13 +38,7 @@ jobs:
     steps:
       - checkout:
           path: ~/repo
-      - run: npm ci
-
-      # Deploy lambda functions with the newest yt-dlp version
-      - run: |
-          curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux -o ./bin/yt-dlp
-          chmod a+rx ./bin/yt-dlp
-      - run: ./bin/yt-dlp --version
+      - run: npm -g install serverless serverless-plugin-git-variables
       - run: npx sls deploy
 
 workflows:

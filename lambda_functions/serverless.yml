@@ -7,10 +7,12 @@ custom:
 
 provider:
   name: aws
-  runtime: nodejs16.x
+  ecr:
+    images:
+      yt-playlist-dl:
+        path: ./
   stage: dev
   region: eu-central-1
-  deploymentBucket: serverless.deploy.yt-playlist-dl-helpers
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -24,13 +26,19 @@ provider:
 
 functions:
   resolve:
-    handler: handler.resolve
+    image:
+      name: yt-playlist-dl
+      command:
+        - handler.resolve
     memorySize: 1536
     timeout: 180
     environment:
       BUCKET: ${self:custom.bucket}
   convert:
-    handler: handler.convert
+    image:
+      name: yt-playlist-dl
+      command:
+        - handler.convert
     memorySize: 1536
     timeout: 120
     environment:
