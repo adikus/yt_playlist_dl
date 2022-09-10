@@ -29,14 +29,12 @@ functions:
     timeout: 180
     environment:
       BUCKET: ${self:custom.bucket}
-      PYTHONHOME: /var/task
   convert:
     handler: handler.convert
     memorySize: 1536
     timeout: 120
     environment:
       BUCKET: ${self:custom.bucket}
-      PYTHONHOME: /var/task
 
 plugins:
   - serverless-plugin-git-variables

@@ -11,3 +11,5 @@ temp/
 .env
 lambda_functions/.serverless
 lambda_functions/tmp/*
+lambda_functions/bin/yt-dlp
+
