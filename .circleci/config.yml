@@ -37,8 +37,6 @@ jobs:
     steps:
       - checkout:
           path: ~/repo
-      # Update npm to newest version
-      - run: sudo npm install -g npm@latest-6
       - run: npm ci
 
       # Deploy lambda functions with the newest youtube-dl version
