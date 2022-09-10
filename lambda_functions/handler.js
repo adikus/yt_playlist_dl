@@ -41,9 +41,7 @@ function downloadYtTrack(id, format_id) {
 }
 
 module.exports.resolve = async function(event, context, callback) {
-    console.log("EVENT:")
-    console.log(event);
-    let params = JSON.parse(event.body || "{}");
+    let params = event;
 
     console.log("Invoking resolve function with params", params);
 
@@ -97,9 +95,7 @@ async function downloadFromS3(key, filename) {
 }
 
 module.exports.convert = async function(event, context, callback) {
-    console.log("EVENT:")
-    console.log(event);
-    let params = JSON.parse(event.body || "{}");
+    let params = event;
 
     console.log("Invoking convert function with params", params);
 
