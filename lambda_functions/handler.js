@@ -95,6 +95,7 @@ async function downloadFromS3(key, filename) {
 }
 
 module.exports.convert = async function(event, context, callback) {
+    console.log(event);
     let params = JSON.parse(event.body || "{}");
 
     console.log("Invoking convert function with params", params);
