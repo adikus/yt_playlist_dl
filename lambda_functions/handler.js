@@ -26,15 +26,13 @@ async function resolveYtInfo(id) {
     return JSON.parse(output);
 }
 
-function downloadYtTrack(id, format_id) {
+function downloadYtTrack(id, format_id, error_callback) {
     let child = execFile(
         path.join(__dirname, 'bin', 'yt-dlp'),
         ['-f', format_id, '--cache-dir', '/tmp/yt', '-o', '-', '--', id],
         {cwd: '/tmp', maxBuffer: 1024 * 1024 * 1024, encoding: 'binary'},
         (err, stdout, stderr) => {
-            if (err) {
-                console.log(err, stdout.length, stderr);
-            }
+            if (err && error_callback) error_callback(err, stderr);
         }
     );
     return child.stdout;
@@ -59,7 +57,11 @@ module.exports.resolve = async function(event, context, callback) {
     let transformFunction = (chunk, encoding, callback) => { callback(null, Buffer.from(chunk.toString(), 'binary')) };
 
     let passtrough = new stream.PassThrough();
-    let videoStream = downloadYtTrack(params.id, format_id);
+    let downloadSuccess = true;
+    let videoStream = downloadYtTrack(params.id, format_id, (err, stderr) => {
+        downloadSuccess = false;
+        console.log("An error happened during download", err, stderr);
+    });
     let tranformStream = new stream.Transform({
         transform: transformFunction
     });
@@ -75,6 +77,12 @@ module.exports.resolve = async function(event, context, callback) {
             ContentType: `audio/${ext}`
         }
     }).promise();
+
+    if (!downloadSuccess) {
+        console.log("Deleting unsuccessfully downloaded file from S3");
+        await s3.deleteObjects({ Bucket: this.name, Delete: { Objects: [{Key: params.key}] } }).promise();
+        throw "An error happened during download";
+    }
 
     callback(null, {ext, format_id, key: params.key});
 };
