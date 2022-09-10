@@ -51,7 +51,6 @@ module.exports.resolve = async function(event, context, callback) {
     let ext = format.ext;
     let format_id = format.format_id;
 
-    console.log(format)
     console.log(`Identified format (${format_id}), downloading & uploading to S3...`);
 
     let transformFunction = (chunk, encoding, callback) => { callback(null, Buffer.from(chunk.toString(), 'binary')) };
