@@ -41,6 +41,7 @@ jobs:
 
       # Deploy lambda functions with the newest youtube-dl version
       - run: ./bin/youtube-dl -U
+      - run: ./bin/youtube-dl --version
       - run: npx sls deploy
 
 workflows:
