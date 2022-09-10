@@ -24,14 +24,14 @@ async function execPromise(command) {
 }
 
 async function resolveYtInfo(id) {
-    let output = await execPromise(`${python} ${path.join(__dirname, 'bin', 'youtube-dl')} -j --cache-dir /tmp/yt -- ${id}`);
+    let output = await execPromise(`${python} ${path.join(__dirname, 'bin', 'yt-dlp')} -j --cache-dir /tmp/yt -- ${id}`);
     return JSON.parse(output);
 }
 
 function downloadYtTrack(id, format_id) {
     let child = execFile(
         python,
-        [path.join(__dirname, 'bin', 'youtube-dl'), '-f', format_id, '--cache-dir', '/tmp/yt', '-o', '-', '--', id],
+        [path.join(__dirname, 'bin', 'yt-dlp'), '-f', format_id, '--cache-dir', '/tmp/yt', '-o', '-', '--', id],
         {cwd: '/tmp', maxBuffer: 1024 * 1024 * 1024, encoding: 'binary'},
         (err, stdout, stderr) => {
             if (err) {

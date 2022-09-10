@@ -39,9 +39,9 @@ jobs:
           path: ~/repo
       - run: npm ci
 
-      # Deploy lambda functions with the newest youtube-dl version
-      - run: ./bin/youtube-dl -U
-      - run: ./bin/youtube-dl --version
+      # Deploy lambda functions with the newest yt-dlp version
+      - run: ./bin/yt-dlp -U
+      - run: ./bin/yt-dlp --version
       - run: npx sls deploy
 
 workflows:
