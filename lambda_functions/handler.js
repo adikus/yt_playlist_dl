@@ -3,10 +3,13 @@ const util = require('util');
 const fs = require('fs');
 const crypto = require('crypto');
 const stream = require('stream');
+const path = require('path');
 
 const aws = require('aws-sdk');
 
 const s3 = new aws.S3();
+
+const python = process.env.PYTHONHOME ? `${process.env.PYTHONHOME}/bin/python` : "python";
 
 async function execPromise(command) {
     return new Promise((resolve, reject) => {
@@ -21,14 +24,14 @@ async function execPromise(command) {
 }
 
 async function resolveYtInfo(id) {
-    let output = await execPromise(`/var/task/bin/python /var/task/bin/youtube-dl -j --cache-dir /tmp/yt -- ${id}`);
+    let output = await execPromise(`${python} ${path.join(__dirname, 'bin', 'youtube-dl')} -j --cache-dir /tmp/yt -- ${id}`);
     return JSON.parse(output);
 }
 
 function downloadYtTrack(id, format_id) {
     let child = execFile(
-        '/var/task/bin/python',
-        ['/var/task/bin/youtube-dl', '-f', format_id, '--cache-dir', '/tmp/yt', '-o', '-', '--', id],
+        python,
+        [path.join(__dirname, 'bin', 'youtube-dl'), '-f', format_id, '--cache-dir', '/tmp/yt', '-o', '-', '--', id],
         {cwd: '/tmp', maxBuffer: 1024 * 1024 * 1024, encoding: 'binary'},
         (err, stdout, stderr) => {
             if (err) {
@@ -52,9 +55,10 @@ module.exports.resolve = async function(event, context, callback) {
     let ext = format.ext;
     let format_id = format.format_id;
 
-    console.log('Identified format, downloading & uploading to S3...');
+    console.log(format)
+    console.log(`Identified format (${format_id}), downloading & uploading to S3...`);
 
-    let transformFunction = (chunk, encoding, callback) => { callback(null, new Buffer(chunk.toString(), 'binary')) };
+    let transformFunction = (chunk, encoding, callback) => { callback(null, Buffer.from(chunk.toString(), 'binary')) };
 
     let passtrough = new stream.PassThrough();
     let videoStream = downloadYtTrack(params.id, format_id);
