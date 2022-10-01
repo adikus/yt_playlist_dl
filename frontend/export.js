@@ -1,3 +1,5 @@
+import $ from 'jquery'
+
 $(function() {
     let renumber = function(start, startIndex) {
         let index = -1;

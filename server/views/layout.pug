@@ -2,7 +2,10 @@ doctype html
 html
     head
         title= title
-        link(rel='stylesheet', href='/dist/main.css')
+        meta(charset="UTF-8")
+        link(rel="icon", href="/favicon.ico")
+        meta(name="", content="width=device-width", initial-scale="1.0")
+        script(type="module", src="/@vite/client")
     body
         #page-container
             main.container-fluid
@@ -17,4 +20,4 @@ html
 
         block bodyScripts
 
-        script(src='/dist/main.js')
+        script(type="module", src='/frontend/main.js')

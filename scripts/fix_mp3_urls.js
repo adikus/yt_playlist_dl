@@ -1,14 +1,14 @@
 require('dotenv').config();
 const orm = require("orm");
 const _ = require('lodash');
-const Video = require('./../models/video');
-const asyncPromise = require('./../lib/async-promise');
+const Video = require('./../server/models/video');
+const asyncPromise = require('./../server/lib/async-promise');
 
 orm.connect(process.env.DATABASE_URL, async function (err, db) {
     if (err) throw err;
 
     let models = {};
-    require('./../services/db').define(db, models, {models});
+    require('./../server/services/db').define(db, models, {models});
 
     await db.syncPromise();
     let videos = await models.video.allAsync();

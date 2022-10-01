@@ -39,7 +39,7 @@ block content
             if playlist.coverImageUrl()
                 img(src=playlist.coverImageUrl(), width=300)
 
-    video-list(:videos="imports.videos")
+    video-list(:videos="imports.videos", :play-track="(title, url) => playTrack(title, url)")
 
 
 block bodyScripts

@@ -6,7 +6,7 @@ orm.connect(process.env.DATABASE_URL, function (err, db) {
     if (err) throw err;
 
     let models = {};
-    require('./../services/db').define(db, models);
+    require('./../server/services/db').define(db, models);
 
     db.sync(function(err) {
         if (err) throw err;
@@ -71,7 +71,7 @@ function checkS3Contents(playlists, videos) {
         _(keys).each(function(key) {
             let keyParts = key.split('/');
 
-            if(keyParts[0] == 'covers'){
+            if(keyParts[0] === 'covers'){
                 let playlist = albumCovers[keyParts[1]];
                 if(!playlist){
                     console.log('Unable to find ', key);
@@ -79,7 +79,7 @@ function checkS3Contents(playlists, videos) {
                 }
             }
 
-            if(keyParts[0] == 'playlists'){
+            if(keyParts[0] === 'playlists'){
                 if(keyParts.length < 4){
                     let track = tracks[keyParts[2]];
                     if(!track){

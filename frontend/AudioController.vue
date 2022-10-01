@@ -15,7 +15,7 @@
             v-model="observedPosition"
             :max="duration"
             :interval="0.1"
-            :tooltip="false"
+            :tooltip="'none'"
             @callback="setPosition"
             @drag-start="draggingSlider=true"
             @drag-end="draggingSlider=false; setPosition($event.val)"
@@ -58,7 +58,7 @@
             loadingReady (duration) {
                 console.log('Track loaded');
                 this.play = true;
-                this.duration = duration;
+                this.duration = Math.round(duration * 10) / 10;
                 this.loading = false;
             },
             playbackEnded () {

@@ -1,3 +1,5 @@
+import $ from 'jquery'
+
 $(function() {
     $('.js-metadata-save').click(function(event) {
         event.preventDefault();
