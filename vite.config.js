@@ -9,8 +9,8 @@ import vuePugPlugin from 'vue-pug-plugin'
 export default defineConfig({
   build: {
     sourcemap: true,
+    manifest: true,
     rollupOptions: {
-      manifest: true,
       input: resolve(__dirname, 'frontend/main.js')
     },
   },
