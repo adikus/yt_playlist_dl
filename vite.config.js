@@ -8,6 +8,7 @@ import vuePugPlugin from 'vue-pug-plugin'
 // https://vitejs.dev/config/
 export default defineConfig({
   build: {
+    sourcemap: true,
     rollupOptions: {
       manifest: true,
       input: resolve(__dirname, 'frontend/main.js')
