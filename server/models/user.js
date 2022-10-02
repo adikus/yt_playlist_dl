@@ -25,13 +25,17 @@ exports.define = function(db) {
                 return difference < 1000 * 3600 * 24 * 30;
             },
             async issueToken() {
-                const token = crypto.randomBytes(32).toString('hex');
+                if (this.remember_token && this.validRememberToken()) {
+                    return this.remember_token;
+                } else {
+                    const token = crypto.randomBytes(32).toString('hex');
 
-                this.remember_token = token;
-                this.remember_created_at = new Date();
-                await this.saveAsync();
+                    this.remember_token = token;
+                    this.remember_created_at = new Date();
+                    await this.saveAsync();
 
-                return token;
+                    return token;
+                }
             }
         }
     });
