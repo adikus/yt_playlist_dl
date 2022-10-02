@@ -15,10 +15,11 @@
             v-model="observedPosition"
             :max="duration"
             :interval="0.1"
-            :tooltip="false"
+            :tooltip="'none'"
             @callback="setPosition"
+            @change="setPosition($event)"
             @drag-start="draggingSlider=true"
-            @drag-end="draggingSlider=false; setPosition($event.val)"
+            @drag-end="draggingSlider=false; setPosition()"
         ></vue-slider>
         <i class="fa fa-play mr-2 playback-control" v-if="play" @click="setPause"></i>
         <i class="fa fa-pause mr-2 playback-control" v-if="!play" @click="setPlay"></i>
@@ -31,6 +32,7 @@
 <script>
     import Audio from './Audio.vue'
     import vueSlider from 'vue-slider-component'
+    import 'vue-slider-component/theme/default.css'
 
     export default {
         props: ['title', 'url'],
@@ -58,7 +60,7 @@
             loadingReady (duration) {
                 console.log('Track loaded');
                 this.play = true;
-                this.duration = duration;
+                this.duration = Math.round(duration * 10) / 10;
                 this.loading = false;
             },
             playbackEnded () {
@@ -72,10 +74,14 @@
                 this.$emit('play');
             },
             setPosition (position) {
-                if(this.draggingSlider){
-                    this.setObservedPosition(position);
+                if(!this.draggingSlider) {
+                    if(position === undefined){
+                        this.position = this.observedPosition;
+                    } else {
+                        this.position = position;
+                    }
                 } else {
-                    this.position = position;
+                    this.setObservedPosition(position);
                 }
             },
             updatePosition (position) {

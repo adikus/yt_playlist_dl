@@ -1,0 +1,31 @@
+doctype html
+html
+    head
+        title= title
+        meta(charset="UTF-8")
+        link(rel="icon", href="/favicon.ico")
+        meta(name="", content="width=device-width", initial-scale="1.0")
+        if manifest
+            each stylesheet in manifest.stylesheets
+                link(rel='stylesheet', href=`/${stylesheet}`)
+        else
+            script(type="module", src="/@vite/client")
+    body
+        #page-container
+            main.container-fluid
+                if messages.info
+                    .alert.alert-info= messages.info
+                if messages.error
+                    .alert.alert-danger= messages.error
+
+                block content
+
+            block footer
+
+        block bodyScripts
+
+        if manifest
+            each script in manifest.scripts
+                script(src=`/${script}`)
+        else
+            script(type="module", src='/frontend/main.js')

@@ -1,0 +1,10 @@
+version: "3.9"
+
+services:
+  web:
+    build: .
+    ports:
+      - 3006:3000
+    volumes:
+      - ./../../config/data:/app/data
+      - ./.env:/app/.env

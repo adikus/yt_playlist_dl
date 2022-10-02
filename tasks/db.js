@@ -1,6 +1,8 @@
 const MigrationTask = require('migrate-orm2');
 const orm = require('orm');
 
+require('dotenv').config();
+
 exports.runMigration = function (operation, grunt, done) {
     orm.settings.set("connection.debug", true);
     orm.connect(process.env.DATABASE_URL, function (err, connection) {

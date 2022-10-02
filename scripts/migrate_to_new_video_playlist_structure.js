@@ -6,7 +6,7 @@ orm.connect(process.env.DATABASE_URL, function (err, db) {
     if (err) throw err;
 
     let models = {};
-    require('./../services/db').define(db, models);
+    require('./../server/services/db').define(db, models);
 
     let playlist_users = {};
 

@@ -1,20 +1,16 @@
 <template lang="pug">
-    .row(
-        v-infinite-scroll="showMore"
-        infinite-scroll-disabled="cannotShowMore"
-        infinite-scroll-distance=500
-    )
-        .col-md-12
-            form
-                input.form-control.mb-3.mt-3(v-model="searchDebounced" placeholder="Search")
+.row
+    .col-md-12
+        form
+            input.form-control.mb-3.mt-3(v-model="searchDebounced" placeholder="Search")
 
-        .col-md-12
-            form
-                .form-check
-                    input.form-check-input(type='checkbox', id="newest_first", v-model="newestFirst")
-                    label.form-check-label(for="newest_first") Newest first
+    .col-md-12
+        form
+            .form-check
+                input.form-check-input(type='checkbox', id="newest_first", v-model="newestFirst")
+                label.form-check-label(for="newest_first") Newest first
 
-        video-item(v-for="(video, index) in videosToShow" :key="video.id" :video="video" :index="index")
+    video-item(v-for="(video, index) in videosToShow" :key="video.id" :video="video" :index="index" :play-track="playTrack")
 </template>
 
 <script>
@@ -23,7 +19,7 @@
     import _ from 'lodash'
 
     export default {
-        props: ['videos'],
+        props: ['videos', 'playTrack'],
         data() {
             return {
                 numVideosToShow: 50,
@@ -51,7 +47,19 @@
                 }, 250)
             }
         },
+        onMounted() {
+            window.addEventListener("scroll", () => this.handleScroll())
+        },
+        onUnmounted() {
+            window.removeEventListener("scroll", () => this.handleScroll())
+        },
         methods: {
+            handleScroll() {
+                console.log(this.ref.getBoundingClientRect().bottom, window.innerHeight);
+                if (this.ref.getBoundingClientRect().bottom < window.innerHeight && this.numVideosToShow < this.videos.length) {
+                    this.numVideosToShow += 50;
+                }
+            },
             searchVideos() {
                 const preparedQuery = fz.prepareQuery(this.search);
                 const scores = {};
@@ -76,9 +84,6 @@
                     })
                     .filter(video => scores[video.id] > 0.5)
                     .sort((a, b) => scores[b.id] - scores[a.id]);
-            },
-            showMore() {
-                this.numVideosToShow += 50;
             }
         },
         components: {
