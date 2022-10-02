@@ -4,8 +4,7 @@ module.exports = shipit => {
     shipit.initConfig({
         default: {
             deployTo: '/home/andrej/yt_playlist_dl',
-            repositoryUrl: 'git@github.com:adikus/yt_playlist_dl.git',
-            branch: 'ah/vite'
+            repositoryUrl: 'git@github.com:adikus/yt_playlist_dl.git'
         },
         production: {
             servers: 'andrej@audio.adikus.me',
