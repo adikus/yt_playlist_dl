@@ -7,7 +7,7 @@ version: 2.1
 executors:
   default_executor:
     docker:
-      - image: circleci/node:8.17
+      - image: cimg/node:18.9
     working_directory: ~/repo
 
   lambda_executor:
@@ -20,8 +20,7 @@ jobs:
     executor: default_executor
     steps:
       - checkout
-      # Update npm to newest version
-      - run: sudo npm install -g npm@latest-6
+
       - run: npm ci
 
       - run: echo "No tests yet"
@@ -30,7 +29,8 @@ jobs:
           fingerprints:
             - "c7:64:14:51:f8:85:7a:2c:37:64:a2:8e:6b:44:42:c4"
       - run: ssh-keyscan -H $PRODUCTION_SERVER_HOST >> ~/.ssh/known_hosts
-      - run: npx shipit production deploy
+
+      - run: shipit production deploy
 
   deploy_lambda:
     executor: lambda_executor
