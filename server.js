@@ -35,6 +35,9 @@ setupOrm(app);
 app.s3Bucket = new S3Bucket('yt-playlist');
 
 app.use("/", express.static(path.join(__dirname, "public")));
+if (process.env.NODE_ENV === "production") {
+    app.use("/", express.static(path.join(__dirname, "dist")));
+}
 
 const router = require("./server/router.js");
 app.use(router);

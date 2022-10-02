@@ -20,6 +20,7 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./frontend', import.meta.url)),
       '~bootstrap': resolve(__dirname, 'node_modules/bootstrap'),
       '~font-awesome': resolve(__dirname, 'node_modules/font-awesome'),
+      'vue': 'vue/dist/vue.esm-bundler.js'  // Allow compiling templates in production build
     }
   }
 })

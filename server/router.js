@@ -5,8 +5,11 @@ const cors = require('cors');
 const { passwordCheck, apiKeyCheck } = require('./passport');
 const { ytCheck } = require('./services/yt_oauth')
 const assetsRouter = require("./routers/dev-assets-router");
+const manifest = require('./manifest');
 
 router.use(assetsRouter);
+
+router.use((req, res, next) => { res.locals.manifest = manifest; next(); });
 
 // Routes that don't require authentication
 router.use('/', require('./routers/index'));
@@ -36,7 +39,7 @@ router.use(function(req, res, next) {
 // error handler
 router.use(function(err, req, res, _next) {
     // set locals, only providing error in development
-    res.locals.messages =  { error: err.message };
+    res.locals.messages = { error: err.message };
     res.locals.error = req.app.get('env') === 'development' ? err : {};
 
     // render the error page

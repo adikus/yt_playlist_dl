@@ -5,7 +5,11 @@ html
         meta(charset="UTF-8")
         link(rel="icon", href="/favicon.ico")
         meta(name="", content="width=device-width", initial-scale="1.0")
-        script(type="module", src="/@vite/client")
+        if manifest
+            each stylesheet in manifest.stylesheets
+                link(rel='stylesheet', href=`/${stylesheet}`)
+        else
+            script(type="module", src="/@vite/client")
     body
         #page-container
             main.container-fluid
@@ -20,4 +24,8 @@ html
 
         block bodyScripts
 
-        script(type="module", src='/frontend/main.js')
+        if manifest
+            each script in manifest.scripts
+                script(src=`/${script}`)
+        else
+            script(type="module", src='/frontend/main.js')
