@@ -21,7 +21,7 @@ jobs:
     steps:
       - checkout
 
-      - run: apt-get install rsync
+      - run: sudo apt-get install rsync
       - run: npm ci
 
       - run: echo "No tests yet"
