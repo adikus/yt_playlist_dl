@@ -5,15 +5,17 @@ module.exports = shipit => {
         default: {
             deployTo: '/home/andrej/yt_playlist_dl',
             repositoryUrl: 'git@github.com:adikus/yt_playlist_dl.git',
+            branch: 'ah/vite'
         },
         production: {
             servers: 'andrej@audio.adikus.me',
         },
     });
 
+    shipit.config.copy = false;
+
     shipit.blTask('build', async () => {
-        await shipit.remote(`bash -cl "cd ${shipit.releasePath}; npm ci --dev"`);
-        await shipit.remote(`bash -cl "cd ${shipit.releasePath}; npm run build"`);
+        await shipit.remote(`bash -cl "cd ${shipit.releasePath}; docker compose -p yt-playlist-dl build"`);
     });
 
     shipit.blTask('copy_config', async () => {
@@ -24,22 +26,17 @@ module.exports = shipit => {
         await shipit.remote(`cd ${shipit.releasePath}/data; rm ./*.json; ln -s ../../../config/data/* ./`);
     });
 
-    shipit.blTask('update_ytdl', async () => {
-        await shipit.remote(`cd ${shipit.releasePath}; `);
-    });
-
-    shipit.blTask('restart_pm2', async () => {
-        await shipit.remote("bash -cl \"pm2 restart Playlists\"");
+    shipit.blTask('restart_docker', async () => {
+        await shipit.remote(`cd ${shipit.releasePath}; docker compose -p yt-playlist-dl up -d`);
     });
 
     shipit.on('updated', async () => {
         await shipit.start('build');
         await shipit.start('copy_config');
         await shipit.start('copy_data');
-        await shipit.start('update_ytdl');
     });
 
     shipit.on('published', async () => {
-        await shipit.start('restart_pm2');
+        await shipit.start('restart_docker');
     })
 };

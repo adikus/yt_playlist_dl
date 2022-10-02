@@ -6,5 +6,5 @@ services:
     ports:
       - 3006:3000
     volumes:
-      - ./data:/app/data
+      - ./../../config/data:/app/data
       - ./.env:/app/.env
