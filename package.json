@@ -6,9 +6,6 @@
     "backend": "nodemon node server",
     "build": "vite build"
   },
-  "engines": {
-    "node": "18.10.0"
-  },
   "dependencies": {
     "aws-sdk": "^2.1227.0",
     "bcrypt": "^5.0.1",
