@@ -71,5 +71,5 @@ module.exports = {
         }
     },
 
-    apiKeyCheck: passport.authenticate('localapikey', { session: false })
+    apiKeyCheck: passport.authenticate('api-key', { session: false })
 }
