@@ -65,13 +65,17 @@
                 this.volume = localStorage.getItem('volume');
             }
             if(this.url){
-              this.playTrack();
+              this.prepareTrack();
             }
         },
         methods: {
             loadingReady (duration) {
                 console.log('Track loaded');
-                this.play = true;
+                if (this.preparing) {
+                    this.preparing = false;
+                } else {
+                    this.play = true;
+                }
                 this.duration = Math.round(duration * 10) / 10;
                 this.loading = false;
             },
@@ -83,7 +87,12 @@
                 this.filename = this.url;
                 this.position = 0;
                 this.loading = true;
-                this.$emit('play');
+            },
+            prepareTrack () {
+                this.play = false;
+                this.filename = this.url;
+                this.loading = true;
+                this.preparing = true;
             },
             setPosition (position) {
                 if(!this.draggingSlider) {

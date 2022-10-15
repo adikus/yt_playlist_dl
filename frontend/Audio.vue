@@ -14,12 +14,21 @@
 
             this.tag.onended = () => this.$emit('playback:end');
             this.tag.oncanplay = () => this.$emit('loading:ready', this.tag.duration);
-            this.tag.ontimeupdate = () => this.$emit('position:update', this.tag.currentTime);
+            this.tag.ontimeupdate = () => {
+                this.$emit('position:update', this.tag.currentTime);
+                localStorage.setItem('audio.position', this.tag.currentTime);
+            }
 
             this.context = new AudioContext();
             this.sourceNode = this.context.createMediaElementSource(this.tag);
 
             this.sourceNode.connect(this.context.destination);
+
+            if (localStorage.getItem('audio.position')) {
+                setTimeout(() => {
+                    this.tag.currentTime = parseFloat(localStorage.getItem('audio.position')) || 0;
+                }, 50);
+            }
         },
         watch: {
             filename (newFilename) {

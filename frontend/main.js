@@ -26,8 +26,19 @@ const app = createApp({
         playTrack(title, url) {
             this.title = title;
             this.url = url;
+
+            localStorage.setItem('audio.title', title);
+            localStorage.setItem('audio.url', url);
         }
-    }
+    },
+    mounted() {
+        if (localStorage.getItem('audio.url')) {
+            this.url = localStorage.getItem('audio.url');
+        }
+        if (localStorage.getItem('audio.title')) {
+            this.title = localStorage.getItem('audio.title');
+        }
+    },
 });
 
 app.use(VueLazyload);
