@@ -37,9 +37,6 @@
                     return videos.slice(0, this.numVideosToShow);
                 }
             },
-            cannotShowMore() {
-                return this.numVideosToShow >= this.videos.length;
-            },
             searchDebounced: {
                 get() {
                     return this.search;
