@@ -1,5 +1,5 @@
 <template>
-    <div class="card-img-top-container" @click="play">
+    <div class="card-img-top-container">
         <img class="card-img-top" v-lazy="imageSrc"/>
         <div class="card-img-top-overlay">
             <div class="fa fa-play"></div>
@@ -9,12 +9,7 @@
 
 <script>
     export default {
-        props: ['imageSrc', 'title', 'url', 'playTrack'],
-        methods: {
-            play() {
-                this.playTrack(this.title, this.url);
-            }
-        }
+        props: ['imageSrc', 'title', 'url']
     };
 </script>
 

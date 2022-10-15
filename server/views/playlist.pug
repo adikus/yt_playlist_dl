@@ -39,7 +39,7 @@ block content
             if playlist.coverImageUrl()
                 img(src=playlist.coverImageUrl(), width=300)
 
-    video-list(:videos="imports.videos", :play-track="(title, url) => playTrack(title, url)")
+    video-list(:videos="imports.videos", :playing-index="playingIndex", :play-track="(title, url, index) => playTrack(title, url, index)")
 
 
 block bodyScripts
@@ -49,4 +49,4 @@ block bodyScripts
 block footer
     footer.footer(v-if="title")
         .container-fluid
-            audio-controller(:title="title", :url="url", @play="url=null")
+            audio-controller(:title="title", :url="url", @play="url=null" @playback:end="playbackEnded")

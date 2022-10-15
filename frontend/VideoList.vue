@@ -10,7 +10,7 @@
                 input.form-check-input(type='checkbox', id="newest_first", v-model="newestFirst")
                 label.form-check-label(for="newest_first") Newest first
 
-    video-item(v-for="(video, index) in videosToShow" :key="video.id" :video="video" :index="index" :play-track="playTrack")
+    video-item(v-for="(video, index) in videosToShow" :key="video.id" :video="video" :index="index" :playing-index="playingIndex" :play-track="playTrack")
 </template>
 
 <script>
@@ -19,7 +19,7 @@
     import _ from 'lodash'
 
     export default {
-        props: ['videos', 'playTrack'],
+        props: ['videos', 'playTrack', 'playingIndex'],
         data() {
             return {
                 numVideosToShow: 50,

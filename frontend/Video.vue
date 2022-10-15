@@ -7,7 +7,7 @@
                 small
                     | {{ video.metadata.channelTitle }}
                     a.float-sm-right(:href="`https://www.youtube.com/watch?v=${video.id}`") {{ video.id }}
-                play-audio-image(:image-src="video.metadata.thumbnails.default.url", :title="video.title", :url="playableUrl", :play-track="playTrack")
+                play-audio-image(:image-src="video.metadata.thumbnails.default.url", :title="video.title", :url="playableUrl", @click="playTrack(video.title, playableUrl, index)")
             .col-sm-4
                 h6 Status & Uploads
                 div
@@ -63,7 +63,7 @@
     import PlayAudioImage from './PlayAudioImage.vue'
 
     export default {
-        props: ['video', 'index', 'playTrack'],
+        props: ['video', 'index', 'playTrack', 'playingIndex'],
         data() {
             return {
                 metadata: {
@@ -94,7 +94,13 @@
                 this.video.metadata[key] = this.video.playlistVideo[key] || (this.guessedMetadata && this.guessedMetadata[key]);
             }
         },
-        methods: {},
+        watch: {
+            playingIndex(playingIndex) {
+                if (this.index === playingIndex) {
+                    this.playTrack(this.video.title, this.playableUrl, this.index)
+                }
+            }
+        },
         components: {
             'play-audio-image': PlayAudioImage
         }

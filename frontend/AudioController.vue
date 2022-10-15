@@ -81,6 +81,7 @@
             },
             playbackEnded () {
                 this.play = false;
+                this.$emit('playback:end')
             },
             playTrack () {
                 this.play = false;
