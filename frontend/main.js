@@ -24,7 +24,6 @@ const app = createApp({
     },
     methods: {
         playTrack(title, url) {
-            console.log(title);
             this.title = title;
             this.url = url;
         }

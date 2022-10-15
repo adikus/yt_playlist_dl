@@ -4,7 +4,7 @@
 
 <script>
     export default {
-        props: ['play', 'position', 'filename'],
+        props: ['play', 'position', 'filename', 'volume'],
         mounted () {
             window.audioTag = this.tag = this.$el;
 
@@ -41,6 +41,9 @@
                 }else{
                     this.tag.pause();
                 }
+            },
+            volume (volume) {
+                this.tag.volume = volume / 100.0;
             }
         }
     };

@@ -4,13 +4,14 @@
             :play="play"
             :position="position"
             :filename="filename"
+            :volume="volume"
             @loading:ready="loadingReady"
             @playback:end="playbackEnded"
             @playback:failed="playbackFailed"
             @position:update="updatePosition">
         </vue-audio>
         <vue-slider
-            class="slider"
+            class="time-slider"
             ref="slider"
             v-model="observedPosition"
             :max="duration"
@@ -26,6 +27,12 @@
         {{minutes}}:{{seconds}}
         &nbsp; | &nbsp;
         {{title}}
+        <div class="volume">
+            <i class="fa fa-volume-off mr-2" v-if="volume === 0" @click="toggleMute()"></i>
+            <i class="fa fa-volume-down mr-2" v-if="volume > 0 && volume <= 50" @click="toggleMute()"></i>
+            <i class="fa fa-volume-up mr-2" v-if="volume > 50" @click="toggleMute()"></i>
+            <vue-slider class="volume-slider" v-model="volume" :max="100" :interval="1" :tooltip="'none'"></vue-slider>
+        </div>
     </div>
 </template>
 
@@ -41,6 +48,8 @@
                 play: false,
                 position: 0,
                 observedPosition: 0,
+                volume: 100,
+                backupVolume: 100,
                 draggingSlider: false,
                 duration: 0,
                 filename: null,
@@ -52,6 +61,9 @@
         },
         mounted () {
             window.slider = this.$refs.slider;
+            if (localStorage.getItem('volume')) {
+                this.volume = localStorage.getItem('volume');
+            }
             if(this.url){
               this.playTrack();
             }
@@ -114,6 +126,14 @@
             playbackFailed () {
                 this.playFailed = true;
                 this.play = false;
+            },
+            toggleMute () {
+                if (this.volume === 0) {
+                    this.volume = this.backupVolume;
+                } else {
+                    this.backupVolume = this.volume;
+                    this.volume = 0;
+                }
             }
         },
         watch: {
@@ -121,6 +141,9 @@
                 if(newUrl !== null){
                     this.playTrack();
                 }
+            },
+            volume (volume) {
+                localStorage.setItem('volume', volume);
             }
         },
         components: {
@@ -136,10 +159,25 @@
         font-size: 1.2em;
     }
 
-    .slider {
+    .time-slider {
         position: absolute;
         top: -8px;
         width: 100% !important;
         margin-left: -15px;
+    }
+
+    .volume {
+        float: right;
+        margin-right: 20px;
+    }
+
+    .volume .fa {
+        width: 20px;
+    }
+
+    .volume-slider {
+        display: inline-block;
+        width: 150px !important;
+        vertical-align: sub;
     }
 </style>
