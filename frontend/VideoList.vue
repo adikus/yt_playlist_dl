@@ -30,11 +30,11 @@
         computed: {
             videosToShow() {
                 if (this.search) {
-                    return this.searchVideos().slice(0, this.numVideosToShow)
+                    return this.searchVideos().slice(0, this.numVideosToShow);
                 } else {
                     let videos = [...this.videos];
                     if(this.newestFirst) videos = videos.reverse();
-                    return videos.slice(0, this.numVideosToShow)
+                    return videos.slice(0, this.numVideosToShow);
                 }
             },
             cannotShowMore() {
