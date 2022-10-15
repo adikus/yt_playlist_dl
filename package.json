@@ -4,6 +4,7 @@
   "scripts": {
     "frontend": "vite",
     "backend": "nodemon node server",
+    "console": "node repl",
     "build": "vite build"
   },
   "dependencies": {

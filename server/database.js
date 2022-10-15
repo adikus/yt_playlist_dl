@@ -27,23 +27,25 @@ function defineModels(db, models, app) {
     models.playlist_video.hasOne('video', models.video, {reverse: 'playlistVideos'});
 }
 
+function define(app, db, models, next) {
+    app.models = models;
+    defineTypes(db);
+
+    db.use(orm_timestamps, {
+        createdProperty: 'created_at',
+        modifiedProperty: 'updated_at',
+        dbtype: { type: 'date', time: true }
+    });
+
+    defineModels(db, models, app);
+
+    if (next) next();
+}
+
 module.exports = {
     setupOrm(app) {
-        app.use(orm.express(process.env.DATABASE_URL, {
-            define: (db, models, next) => {
-                app.models = models;
-                defineTypes(db);
+        app.use(orm.express(process.env.DATABASE_URL, { define: (db, models, next) => define(app, db, models, next) }));
+    },
 
-                db.use(orm_timestamps, {
-                    createdProperty: 'created_at',
-                    modifiedProperty: 'updated_at',
-                    dbtype: { type: 'date', time: true }
-                });
-
-                defineModels(db, models, app);
-
-                next();
-            }
-        }));
-    }
+    define: define
 }
