@@ -1,5 +1,5 @@
 <template lang="pug">
-.row
+.row(ref="playlistContainer")
     .col-md-12
         form
             input.form-control.mb-3.mt-3(v-model="searchDebounced" placeholder="Search")
@@ -47,16 +47,15 @@
                 }, 250)
             }
         },
-        onMounted() {
+        mounted() {
             window.addEventListener("scroll", () => this.handleScroll())
         },
-        onUnmounted() {
+        unmounted() {
             window.removeEventListener("scroll", () => this.handleScroll())
         },
         methods: {
             handleScroll() {
-                console.log(this.ref.getBoundingClientRect().bottom, window.innerHeight);
-                if (this.ref.getBoundingClientRect().bottom < window.innerHeight && this.numVideosToShow < this.videos.length) {
+                if (this.$refs.playlistContainer.getBoundingClientRect().bottom < window.innerHeight && this.numVideosToShow < this.videos.length) {
                     this.numVideosToShow += 50;
                 }
             },
