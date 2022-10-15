@@ -93,6 +93,7 @@ exports.define = function(db, app) {
                 });
                 let videos = await this.getVideos();
                 videos = _(videos).filter((video) => video.playlistVideo.status !== 'removed').value();
+                videos = _(videos).filter((video) => !oldVideoIds.includes(video.id)).value();
                 await asyncPromise.eachLimit(videos, 4, async (video) => {
                     if(!_(ytVideos).find({contentDetails: {videoId: video.id}})){
                         let playlistVideo = video.playlistVideo;
