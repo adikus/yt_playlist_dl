@@ -19,7 +19,7 @@ router.get('/refresh', wrap(async function(req, res) {
     res.redirect('/playlists');
 }));
 
-router.get('/:id*', wrap(async function(req, res, next) {
+router.all('/:id*', wrap(async function(req, res, next) {
     req.playlist = await Playlist.getFromDbOrApi(req, req.params.id);
     if(req.playlist.user_id !== req.user.id) {
         return res.send(401);

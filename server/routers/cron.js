@@ -18,7 +18,7 @@ router.get('/refresh-all', wrap(async function(req, res) {
         console.log('Refreshing playlists for', user.username);
         req.user = user;
         req.session.ytAuth = null;
-        await util.promisify(ytOauth.requestCheck).call(ytOauth, req, res);
+        await util.promisify(ytOauth.ytCheck).call(ytOauth, req, res);
         if (req.session.ytAuth === null) continue;
         await Playlist.refresh(req);
         let playlists = await req.models.playlist.findAsync({user_id: req.user.id});
