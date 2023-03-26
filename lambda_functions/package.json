@@ -6,7 +6,7 @@
     "aws-sdk": "^2.814.0"
   },
   "devDependencies": {
-    "serverless": "^3.22.0",
+    "serverless": "^3.29.0",
     "serverless-plugin-git-variables": "^5.2.0"
   }
 }
