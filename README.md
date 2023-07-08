@@ -10,6 +10,7 @@ Migration files are in `data/migrations`.
 ## TODO
 
 * [ ] Add a per-user queue model, records in the queue can be implicit or explicit
+* [ ] Fix video status being set to removed (or stop setting the status at all)
 * [ ] Figure out why remember tokens do not work
 * [ ] Redesign UI
   * Main playlist view should be split into 3 (or more?) panes - Queue | Playlist | Video
