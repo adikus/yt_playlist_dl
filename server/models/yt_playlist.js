@@ -1,27 +1,20 @@
-const request = require('request');
+const request = require('request-promise');
 const _ = require('lodash');
 
 const ytVideo = require('./yt_video');
 
 const ytApiUrl = 'https://www.googleapis.com/youtube/v3';
 
-exports.search = function(token, qs, callback) {
-    return new Promise(function (resolve, reject) {
-        request.get({
-            url: ytApiUrl + '/playlists',
-            qs: qs,
-            auth: {
-                bearer: token
-            }
-        }, function(err, response, body) {
-            if(err) return reject(err);
-            let playlists = JSON.parse(body).items;
-            if(callback) {
-                callback(playlists);
-            }
-            resolve(playlists);
-        });
+exports.search = async function(token, qs) {
+    const response = await request.get({
+        url: ytApiUrl + '/playlists',
+        qs: qs,
+        auth: {
+            bearer: token
+        },
+        json: true
     });
+    return response.items;
 };
 
 exports.retrieve = async function(token, callback) {
@@ -53,10 +46,10 @@ exports.get = async function(id, token, callback) {
     }
 };
 
-async function getVideosDetails(items, idsToIgnore, token, callback) {
+async function getVideosDetails(items, idsToIgnore, token) {
     idsToIgnore = idsToIgnore || [];
     let videoIds = _(items).map((item) => item.contentDetails.videoId);
-    videoIds = _(videoIds).filter((id) => idsToIgnore.indexOf(id) === -1).value();
+    videoIds = _(videoIds).filter((id) => !idsToIgnore.includes(id)).value();
 
     if (videoIds.length === 0) {
         return;
@@ -68,26 +61,16 @@ async function getVideosDetails(items, idsToIgnore, token, callback) {
         maxResults: 50
     };
 
-    return new Promise((resolve) => {
-        console.log('Searching videos', videoIds.length);
-        ytVideo.search(token, qs, function(videos){
-            let videoObject = _(_(videos).map(function(video) { return [video.id, video]; })).fromPairs().value();
-            _(items).each(function(item) { item.video = videoObject[item.contentDetails.videoId]; });
-
-            if(callback){
-                callback();
-            }
-            resolve();
-        });
-    });
+    console.log(`Searching ${videoIds.length} videos to get video details`);
+    const videos = await ytVideo.search(token, qs);
+    let videoObject = _(_(videos).map((video) => { return [video.id, video]; })).fromPairs().value();
+    _(items).each((item) => { item.video = videoObject[item.contentDetails.videoId]; });
 }
 
-exports.getItemsPage = function(id, pageToken, previousPageItems, token, params, callback) {
-    let self = this;
-
+exports.getItemsPage = async function(id, pageToken, previousPageItems, token, params) {
     console.log('Getting page', pageToken, 'from', id);
 
-    request.get({
+    const response = await request({
         url: ytApiUrl + '/playlistItems',
         qs: {
             part: 'id,snippet,contentDetails',
@@ -97,31 +80,21 @@ exports.getItemsPage = function(id, pageToken, previousPageItems, token, params,
         },
         auth: {
             bearer: token
-        }
-    }, async function(err, response, body) {
-        let payload = JSON.parse(body);
-        let items = payload.items;
-
-        await getVideosDetails(items, params.idsToIgnore, token);
-        previousPageItems.push.apply(previousPageItems, items);
-
-        if(payload.nextPageToken){
-            self.getItemsPage(id, payload.nextPageToken, previousPageItems, token, params, callback);
-        } else {
-            callback(previousPageItems);
-        }
+        },
+        json: true
     });
+
+    const items = response.items;
+    await getVideosDetails(items, params.idsToIgnore, token);
+    previousPageItems.push.apply(previousPageItems, items);
+
+    if(response.nextPageToken){
+        return await this.getItemsPage(id, response.nextPageToken, previousPageItems, token, params);
+    } else {
+        return previousPageItems;
+    }
 };
 
-exports.getItems = async function(id, token, callback_or_params) {
-    let params = typeof callback_or_params == 'function' ? {} : (callback_or_params || {});
-    let callback = typeof callback_or_params == 'function' ? callback_or_params : null;
-    return new Promise((resolve) => {
-        this.getItemsPage(id, null, [], token, params, (result) => {
-            if(callback){
-                callback(result);
-            }
-            resolve(result);
-        });
-    });
+exports.getItems = async function(id, token, params) {
+    return await this.getItemsPage(id, null, [], token, params || {})
 };

@@ -1,16 +1,15 @@
-const request = require('request');
+const request = require('request-promise');
 
 const yt_api = 'https://www.googleapis.com/youtube/v3';
 
-exports.search = function(token, qs, callback) {
-    request.get({
+exports.search = async function(token, qs) {
+    const response = await request({
         url: yt_api + '/videos',
         qs: qs,
         auth: {
             bearer: token
-        }
-    }, function(err, response, body) {
-        let videos = JSON.parse(body).items;
-        callback(videos);
-    });
+        },
+        json: true
+    })
+    return response.items;
 };
