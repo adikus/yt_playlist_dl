@@ -3,7 +3,7 @@
   "version": "0.0.3",
   "scripts": {
     "frontend": "vite",
-    "backend": "nodemon node server",
+    "backend": "nodemon server",
     "console": "node repl",
     "build": "vite build"
   },
