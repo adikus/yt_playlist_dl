@@ -33,6 +33,7 @@ module.exports = {
         ));
 
         passport.use('remember-me', new RememberMeStrategy(
+            { maxAge: 1000 * 3600 * 24 * 90 }, // 90 days
             async (token, done) => {
                 const user = await app.models.user.oneAsync({ remember_token: token });
 

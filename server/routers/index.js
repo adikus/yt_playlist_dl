@@ -18,7 +18,7 @@ router.post(
         req.session.save(async () => {
             const token = await req.user.issueToken();
             console.log('Setting remember me cookie');
-            res.cookie('remember_me', token, { path: '/', httpOnly: true, maxAge: 1000 * 3600 * 24 * 30 }); // 1 month
+            res.cookie('remember_me', token, { path: '/', httpOnly: true, maxAge: 1000 * 3600 * 24 * 90 }); // 90 days
 
             res.redirect(req.session.returnTo || '/playlists');
         });
