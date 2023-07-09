@@ -22,8 +22,8 @@
             @drag-start="draggingSlider=true"
             @drag-end="draggingSlider=false; setPosition()"
         ></vue-slider>
-        <i class="fa fa-play mr-2 playback-control" v-if="play" @click="setPause"></i>
-        <i class="fa fa-pause mr-2 playback-control" v-if="!play" @click="setPlay"></i>
+        <i class="fa fa-play mr-2 playback-control" v-if="!play" @click="setPlay"></i>
+        <i class="fa fa-pause mr-2 playback-control" v-if="play" @click="setPause"></i>
         {{minutes}}:{{seconds}}
         &nbsp; | &nbsp;
         {{title}}
@@ -154,6 +154,9 @@
             },
             volume (volume) {
                 localStorage.setItem('volume', volume);
+            },
+            play(play) {
+                this.$emit('changedState', { playing: play });
             }
         },
         components: {

@@ -22,7 +22,7 @@ orm.connect(process.env.DATABASE_URL, async (err, db) => {
 
     replServer.context.app = app;
     replServer.context.s3Bucket = app.s3Bucket;
-    replServer.context.db = app.db;
+    replServer.context.db = db;
     replServer.context.models = app.models;
 
     Object.entries(app.models).forEach(([key, _value]) => {

@@ -1,0 +1,33 @@
+extends layout
+
+block content
+    form.form-inline.m-3.float-sm-right
+        .input-group
+            .input-group-text
+                label.m-0(for='api_key') Your API Key
+            input#api_key.form-control(name='api_key', value=user.api_key)
+    h1.mt-1 YT Playlists
+
+    .clearfix
+
+    .row
+        .col-3
+            .border.rounded.p-3.bg-white
+                .row
+                    .col
+                        queue-controller(:title="title", :playing="playing")
+        .col-6
+            .border.rounded.p-3.bg-white
+                playlists(@selected="selectItem")
+        .col-3
+            .border.rounded.p-3.bg-white.sticky-top.max-w-sticky-col
+                .row
+                    .col
+                        selected-item(:selected-item="selectedItem", :selected-item-type="selectedItemType")
+
+block footer
+    footer.bg-white.footer(v-if="title")
+        .container-fluid
+            audio-controller(:title="title", :url="url", @play="url=null" @changed-state="playbackChangedState" @playback:end="playbackEnded")
+
+

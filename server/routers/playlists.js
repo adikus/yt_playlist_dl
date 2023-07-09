@@ -11,10 +11,18 @@ const router = express.Router();
 
 router.get('/', wrap(async function(req, res) {
     let playlists = await req.models.playlist.findAsync({user_id: req.user.id}, {order: '-created_at'});
-    res.render('playlists', {title: 'Your YT playlists', playlists: playlists, user: req.user});
+    if (req.accepts("html")) {
+        res.render('playlists', {title: 'Your YT playlists', playlists: playlists, user: req.user});
+    } else {
+        res.json({ playlists: playlists });
+    }
 }));
 
-router.get('/refresh', wrap(async function(req, res) {
+router.get('/v2', wrap(async (req, res) => {
+    res.render('player', { title: 'Your YT playlists', user: req.user});
+}));
+
+router.post('/refresh', wrap(async function(req, res) {
     await Playlist.refresh(req);
     res.redirect('/playlists');
 }));
@@ -35,20 +43,25 @@ router.get('/:id', wrap(async function(req, res) {
     await Video.preload(req, videos, 'mp3_upload_id', 'mp3Upload', 'upload');
     await Video.preloadCustomUploads(req, videos);
 
-    if (videos.length === 0){
-        res.redirect('/playlists/' + req.params.id + '/refresh');
+    if (req.accepts("html")) {
+        if (videos.length === 0){
+            res.redirect('/playlists/' + req.params.id + '/refresh');
+        } else {
+            res.render('playlist', {title: req.playlist.title, playlist: req.playlist, items: videos});
+        }
     } else {
-        res.render('playlist', {title: req.playlist.title, playlist: req.playlist, items: videos});
+        let playlist = _(req.playlist).pick(_.keys(req.models.playlist.properties));
+        res.json({ playlist, videos: videos.map((video) => video.asJson()) })
     }
 }));
 
-router.get('/:id/refresh', wrap(async function(req, res) {
+router.post('/:id/refresh', wrap(async function(req, res) {
     await req.playlist.refresh(req);
 
     res.redirect('/playlists/' + req.playlist.id);
 }));
 
-router.get('/:id/upload', async function(req, res) {
+router.post('/:id/upload', async function(req, res) {
     res.redirect('/playlists/' + req.playlist.id);
 
     let videos = await req.playlist.getVideos();
@@ -64,7 +77,7 @@ router.get('/:id/upload', async function(req, res) {
     console.log('-------------------------------------------');
 });
 
-router.get('/:id/convert', async function(req, res) {
+router.post('/:id/convert', async function(req, res) {
     res.redirect('/playlists/' + req.playlist.id);
 
     let videos = await req.playlist.getVideos();
@@ -107,14 +120,20 @@ router.post('/:id/export', wrap(async function(req, res) {
 }));
 
 router.post('/:id/metadata', wrap(async function(req, res) {
-    req.playlist.autoupdate = req.body.autoupdate === 'on';
-    req.playlist.album_name = req.body.album;
+    if ('autoupdate' in req.body) req.playlist.autoupdate = req.body.autoupdate === 'on' || req.body.autoupdate === true;
+    if ('album' in req.body) req.playlist.album_name = req.body.album;
     await req.playlist.saveAsync();
 
     if(req.files && req.files.image_file && req.files.image_file.data.length){
         await req.playlist.uploadAlbumCover(req.files.image_file);
     }
-    res.redirect('/playlists/' + req.playlist.id);
+
+    if (req.accepts("html")) {
+        res.redirect('/playlists/' + req.playlist.id);
+    } else {
+        res.json({ status: 'ok' });
+    }
+
 }));
 
 module.exports = router;

@@ -8,7 +8,10 @@ import './export'
 import VueLazyload from 'vue3-lazyload'
 
 import AudioController from './AudioController.vue'
+import Playlists from './Playlists.vue'
 import VideoList from './VideoList.vue'
+import QueueController from './QueueController.vue'
+import SelectedItem from "./SelectedItem.vue";
 
 const app = createApp({
     data() {
@@ -16,12 +19,18 @@ const app = createApp({
             title: null,
             url: null,
             playingIndex: null,
-            imports: window.vueData || {}
+            imports: window.vueData || {},
+            playing: false,
+            selectedItem: null,
+            selectedItemType: null
         }
     },
     components: {
         AudioController,
-        VideoList
+        Playlists,
+        VideoList,
+        QueueController,
+        SelectedItem
     },
     methods: {
         playTrack(title, url, index) {
@@ -35,6 +44,19 @@ const app = createApp({
         },
         playbackEnded() {
             this.playingIndex = parseInt(this.playingIndex) + 1;
+        },
+        playbackChangedState(newState) {
+            console.log(newState)
+            this.playing = newState.playing;
+        },
+        selectItem(item) {
+            if (item.playlist) {
+                this.selectedItem = item.playlist;
+                this.selectedItemType = 'playlist';
+            } else if (item.video) {
+                this.selectedItem = item.video;
+                this.selectedItemType = 'video';
+            }
         }
     },
     mounted() {

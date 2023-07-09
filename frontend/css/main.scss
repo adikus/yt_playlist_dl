@@ -5,8 +5,8 @@
 $navbar-dark-toggler-icon-bg:       url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='#{str-replace(str-replace(#{$navbar-dark-color}, "(", "%28"), ")", "%29")}' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
 $navbar-light-toggler-icon-bg:      url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='#{str-replace(str-replace(#{$navbar-light-color}, "(", "%28"), ")", "%29")}' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
 
-@import "custom";
 @import "~bootstrap/scss/bootstrap";
+@import "custom";
 
 $fa-font-path: "~font-awesome/fonts";
 @import '~font-awesome/scss/font-awesome.scss';
@@ -29,4 +29,11 @@ body {
     height: 60px; /* Set the fixed height of the footer here */
     line-height: 60px; /* Vertically center the text there */
     background-color: #f5f5f5;
+    z-index: 1050;
 }
+
+.max-w-sticky-col {
+    max-height: calc(100vh - 60px - 70px);
+    overflow-y: auto;
+}
+
