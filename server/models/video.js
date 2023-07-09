@@ -92,6 +92,25 @@ exports.define = function(db, app) {
                 console.log('Saving mp3 upload for ' + this.id + ' (' + this.title + ')');
                 this.mp3_upload_id = mp3Upload.id;
                 await this.saveAsync();
+            },
+
+            asJson() {
+                const obj = {
+                    playlistVideo: _(this.playlistVideo).pick(_.keys(this.app.models.playlist_video.properties)),
+                    ..._(this).pick(_.keys(this.app.models.video.properties).concat(['originalUpload', 'mp3Upload'])).value()
+                };
+
+                if (this.originalUpload) {
+                    this.originalUpload.url = this.originalUpload.S3Url();
+                    obj.originalUpload = _(this.originalUpload).pick(_.keys(this.app.models.upload.properties).concat(['url'])).value()
+                }
+
+                if (this.mp3Upload) {
+                    this.mp3Upload.url = this.mp3Upload.S3Url();
+                    obj.mp3Upload = _(this.mp3Upload).pick(_.keys(this.app.models.upload.properties).concat(['url'])).value()
+                }
+
+                return obj;
             }
         }
     });
