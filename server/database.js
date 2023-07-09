@@ -39,6 +39,16 @@ function define(app, db, models, next) {
 
     defineModels(db, models, app);
 
+    const originalExecMethod = db.driver.execSimpleQuery;
+    db.driver.execSimpleQuery = function (query, cb) {
+        const start = process.hrtime();
+        originalExecMethod.apply(db.driver, [query, (err, res) => {
+            const time = process.hrtime(start)[1] / 1000000;
+            console.log(`${time.toFixed(2)} ms | ${res?.length} | ${query}`)
+            cb(err, res)
+        }]);
+    };
+
     if (next) next();
 }
 
