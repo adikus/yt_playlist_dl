@@ -34,6 +34,7 @@
             filename (newFilename) {
                 if(newFilename){
                     this.tag.src = newFilename;
+                    this.tag.load();
                 }
             },
             position (newPosition) {
