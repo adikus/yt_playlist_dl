@@ -12,7 +12,7 @@ block content
 
     .row
         .col-3
-            .border.rounded.p-3.bg-white
+            .border.rounded.p-3.bg-white.sticky-top.max-h-sticky-col
                 .row
                     .col
                         queue-controller(:title="title", :playing="playing", @play-video="playVideo")
@@ -20,7 +20,7 @@ block content
             .border.rounded.p-3.bg-white
                 playlists(@selected-playlist="selectPlaylist", @selected-video="selectVideo")
         .col-3
-            .border.rounded.p-3.bg-white.sticky-top.max-w-sticky-col
+            .border.rounded.p-3.bg-white.sticky-top.max-h-sticky-col
                 .row
                     .col
                         selected-item(:playlist="selectedPlaylist", :video="selectedVideo", :playing-title="title", :playing="playing", @selected-video="selectVideo", @play-video="playVideo")
