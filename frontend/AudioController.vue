@@ -79,6 +79,10 @@
                 }
                 this.duration = Math.round(duration * 10) / 10;
                 this.loading = false;
+
+                if (navigator?.mediaSession?.setPositionState) {
+                    navigator.mediaSession.setPositionState({ duration: this.duration, position: position });
+                }
             },
             playbackEnded () {
                 this.play = false;
