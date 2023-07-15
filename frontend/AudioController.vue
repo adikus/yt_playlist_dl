@@ -81,7 +81,7 @@
                 this.loading = false;
 
                 if (navigator?.mediaSession?.setPositionState) {
-                    navigator.mediaSession.setPositionState({ duration: this.duration, position: position });
+                    navigator.mediaSession.setPositionState({ duration: this.duration, playbackRate: 1, position: this.position });
                 }
             },
             playbackEnded () {
@@ -107,6 +107,10 @@
                     } else {
                         this.position = position;
                     }
+
+                    if (navigator?.mediaSession?.setPositionState) {
+                        navigator.mediaSession.setPositionState({ duration: this.duration, playbackRate: 1, position: position });
+                    }
                 } else {
                     this.setObservedPosition(position);
                 }
@@ -119,10 +123,6 @@
             },
             setObservedPosition (position) {
                 this.observedPosition = position;
-
-                if (navigator?.mediaSession?.setPositionState) {
-                    navigator.mediaSession.setPositionState({ duration: this.duration, position: position });
-                }
 
                 this.seconds = this.formatTime(Math.floor(this.observedPosition % 60));
                 this.minutes = this.formatTime(Math.floor(this.observedPosition / 60));
