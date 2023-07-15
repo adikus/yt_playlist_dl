@@ -116,6 +116,10 @@
             setObservedPosition (position) {
                 this.observedPosition = position;
 
+                if (navigator?.mediaSession?.setPositionState) {
+                    navigator.mediaSession.setPositionState({ duration: this.duration, position: position });
+                }
+
                 this.seconds = this.formatTime(Math.floor(this.observedPosition % 60));
                 this.minutes = this.formatTime(Math.floor(this.observedPosition / 60));
             },
