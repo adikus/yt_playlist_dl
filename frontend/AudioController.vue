@@ -109,7 +109,7 @@
                     }
 
                     if (navigator?.mediaSession?.setPositionState) {
-                        navigator.mediaSession.setPositionState({ duration: this.duration, playbackRate: 1, position: position });
+                        navigator.mediaSession.setPositionState({ duration: this.duration, playbackRate: 1, position: this.position });
                     }
                 } else {
                     this.setObservedPosition(position);
