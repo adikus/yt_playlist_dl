@@ -118,6 +118,10 @@
             updatePosition (position) {
                 if(!this.draggingSlider) {
                    this.setObservedPosition(position);
+
+                    if (navigator?.mediaSession?.setPositionState) {
+                        navigator.mediaSession.setPositionState({ duration: this.duration, playbackRate: 1, position: this.position || 0 });
+                    }
                 }
                 this.position = null;
             },

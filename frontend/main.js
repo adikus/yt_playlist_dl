@@ -43,8 +43,8 @@ const app = createApp({
                 navigator.mediaSession.setActionHandler('play', () => this.$refs.audioController.setPlay());
                 navigator.mediaSession.setActionHandler('pause', () => this.$refs.audioController.setPause());
                 navigator.mediaSession.setActionHandler('seekto', (details) => this.$refs.audioController.setPosition(details.seekTime));
-                navigator.mediaSession.setActionHandler('seekbackward', (details) => this.$refs.audioController.setPosition(this.$refs.audioController.observedPosition - details.seekTime));
-                navigator.mediaSession.setActionHandler('seekforward', (details) => this.$refs.audioController.setPosition(this.$refs.audioController.observedPosition + details.seekTime));
+                navigator.mediaSession.setActionHandler('seekbackward', (details) => this.$refs.audioController.setPosition(this.$refs.audioController.observedPosition - details.seekOffset));
+                navigator.mediaSession.setActionHandler('seekforward', (details) => this.$refs.audioController.setPosition(this.$refs.audioController.observedPosition + details.seekOffset));
             }
 
             if (this.title === video.title && this.url) {
