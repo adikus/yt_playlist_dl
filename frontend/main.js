@@ -42,6 +42,7 @@ const app = createApp({
                 })
                 navigator.mediaSession.setActionHandler('play', () => this.$refs.audioController.setPlay());
                 navigator.mediaSession.setActionHandler('pause', () => this.$refs.audioController.setPause());
+                navigator.mediaSession.setActionHandler('seeekto', this.$refs.audioController.setPosition);
             }
 
             if (this.title === video.title && this.url) {
