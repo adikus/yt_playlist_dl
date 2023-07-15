@@ -42,7 +42,7 @@ const app = createApp({
                 })
                 navigator.mediaSession.setActionHandler('play', () => this.$refs.audioController.setPlay());
                 navigator.mediaSession.setActionHandler('pause', () => this.$refs.audioController.setPause());
-                navigator.mediaSession.setActionHandler('seeekto', (details) => this.$refs.audioController.setPosition(details.seekTime));
+                navigator.mediaSession.setActionHandler('seekto', (details) => this.$refs.audioController.setPosition(details.seekTime));
             }
 
             if (this.title === video.title && this.url) {
