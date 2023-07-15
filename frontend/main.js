@@ -34,6 +34,16 @@ const app = createApp({
     },
     methods: {
         playVideo(video) {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: video.title,
+                    artist: video.metadata.channelTitle,
+                    artwork: Object.entries(video.metadata.thumbnails).map(([_, t]) => ({ src: t.url, sizes: `${t.width}x${t.height}` }))
+                })
+                navigator.mediaSession.setActionHandler('play', () => this.$refs.audioController.setPlay());
+                navigator.mediaSession.setActionHandler('pause', () => this.$refs.audioController.setPause());
+            }
+
             if (this.title === video.title && this.url) {
                 if (this.playing) this.$refs.audioController.setPause()
                 else this.$refs.audioController.setPlay()
