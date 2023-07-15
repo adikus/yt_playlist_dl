@@ -1,8 +1,30 @@
 <template lang="pug">
-template(v-if="playlist")
+template(v-if="video")
+        img.thumbnail.mr-2.w-100(v-lazy="video.metadata.thumbnails.maxres?.url || video.metadata.thumbnails.high.url")
+        a.mt-1.d-inline-block(href='#', @click.prevent="$emit('selectedVideo', null)") &lt; {{playlist.title}}
+        h2.mt-2 {{video.title}}
+
+        .d-flex.flex-row
+            .badge.badge-dark.mr-2 {{video.metadata.channelTitle}}
+            .badge.badge-light.mr-2 {{video.playlistVideo.status}}
+            .badge.badge-light.mr-2 {{video.playlistVideo.created_at}}
+            .badge.badge-success.mr-2(v-if="video.originalUpload?.url") Uploaded
+            .badge.badge-success.mr-2(v-if="video.mp3Upload?.url") Converted
+
+        .d-flex.flex-row.justify-content-between.mt-3
+            a.btn.btn-primary(href='#', v-if="video.title === playingTitle && playing", @click.prevent="$emit('playVideo', video)")
+                span.fa.fa-pause.mr-1
+                | Pause
+            a.btn.btn-primary(href='#', v-else, @click.prevent="$emit('playVideo', video)")
+                span.fa.fa-play.mr-1
+                | Play
+
+
+template(v-else-if="playlist")
     img.thumbnail.mr-2.w-100(v-lazy="playlist.metadata.thumbnails.maxres.url")
     h2 {{playlist.title}}
-    .text-muted {{playlist.status}} | {{playlist.created_at}}
+    .badge.badge-light.mr-2 {{playlist.status}}
+    .badge.badge-light.mr-2 {{playlist.created_at}}
 
     .d-flex.flex-row.justify-content-between.mt-2
         a.btn.btn-primary(href='#', @click.prevent="refresh")
@@ -27,7 +49,7 @@ template(v-if="playlist")
 import Spinner from "./Spinner.vue";
 
 export default {
-    props: ['selectedItem', 'selectedItemType'],
+    props: ['playlist', 'video', 'playingTitle', 'playing'],
     components: { Spinner },
     data() {
         return {
@@ -36,9 +58,32 @@ export default {
             converting: false
         };
     },
-    computed: {
-        playlist() {
-            return this.selectedItemType === 'playlist' ? this.selectedItem : null
+    emits: ['selectedVideo', 'playVideo'],
+    watch: {
+        async playlist(playlist, oldPlaylist) {
+            if (playlist) {
+                if (oldPlaylist) oldPlaylist.shownVideos = [];
+
+                if (playlist.videos) {
+                    playlist.shownVideos = playlist.videos;
+                    return;
+                }
+
+                playlist.loading = true;
+
+                const response = await fetch(`/playlists/${this.playlist.id}`, { credentials: "include", headers: { 'Accept': 'application/json' }});
+
+                playlist.loading = false;
+                if (response.status === 200) {
+                    const body = await response.json();
+                    playlist.videos = body.videos;
+                    playlist.shownVideos = playlist.videos;
+                } else {
+                    throw "Request failed"
+                }
+            } else if(!this.video) {
+                if (oldPlaylist) oldPlaylist.shownVideos = [];
+            }
         }
     },
     methods: {
@@ -75,11 +120,14 @@ export default {
 
             this[stateName] = false;
             if (response.status === 200) {
-                return response.json();
+                const body = await response.json();
+                this.playlist.videos = body.videos;
+                this.playlist.shownVideos = this.playlist.videos;
+                return body;
             } else {
                 throw "Request failed"
             }
-        }
+        },
     }
 };
 </script>

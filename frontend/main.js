@@ -21,8 +21,8 @@ const app = createApp({
             playingIndex: null,
             imports: window.vueData || {},
             playing: false,
-            selectedItem: null,
-            selectedItemType: null
+            selectedPlaylist: null,
+            selectedVideo: null
         }
     },
     components: {
@@ -33,6 +33,20 @@ const app = createApp({
         SelectedItem
     },
     methods: {
+        playVideo(video) {
+            if (this.title === video.title && this.url) {
+                if (this.playing) this.$refs.audioController.setPause()
+                else this.$refs.audioController.setPlay()
+
+                return;
+            }
+
+            this.title = video.title;
+            this.url = video.mp3Upload?.url || video.originalUpload?.url || 'https://audio.adikus.me/yt/' + video.id;
+
+            localStorage.setItem('audio.title', this.title);
+            localStorage.setItem('audio.url', this.url);
+        },
         playTrack(title, url, index) {
             this.title = title;
             this.url = url;
@@ -46,17 +60,14 @@ const app = createApp({
             this.playingIndex = parseInt(this.playingIndex) + 1;
         },
         playbackChangedState(newState) {
-            console.log(newState)
             this.playing = newState.playing;
         },
-        selectItem(item) {
-            if (item.playlist) {
-                this.selectedItem = item.playlist;
-                this.selectedItemType = 'playlist';
-            } else if (item.video) {
-                this.selectedItem = item.video;
-                this.selectedItemType = 'video';
-            }
+        selectVideo(video) {
+            this.selectedVideo = video;
+        },
+        selectPlaylist(playlist) {
+            this.selectedPlaylist = playlist;
+            this.selectedVideo = null;
         }
     },
     mounted() {

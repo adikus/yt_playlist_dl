@@ -15,19 +15,19 @@ block content
             .border.rounded.p-3.bg-white
                 .row
                     .col
-                        queue-controller(:title="title", :playing="playing")
+                        queue-controller(:title="title", :playing="playing", @play-video="playVideo")
         .col-6
             .border.rounded.p-3.bg-white
-                playlists(@selected="selectItem")
+                playlists(@selected-playlist="selectPlaylist", @selected-video="selectVideo")
         .col-3
             .border.rounded.p-3.bg-white.sticky-top.max-w-sticky-col
                 .row
                     .col
-                        selected-item(:selected-item="selectedItem", :selected-item-type="selectedItemType")
+                        selected-item(:playlist="selectedPlaylist", :video="selectedVideo", :playing-title="title", :playing="playing", @selected-video="selectVideo", @play-video="playVideo")
 
 block footer
     footer.bg-white.footer(v-if="title")
         .container-fluid
-            audio-controller(:title="title", :url="url", @play="url=null" @changed-state="playbackChangedState" @playback:end="playbackEnded")
+            audio-controller(ref="audioController", :title="title", :url="url", @play="url=null" @changed-state="playbackChangedState" @playback:end="playbackEnded")
 
 

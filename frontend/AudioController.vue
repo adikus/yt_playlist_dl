@@ -13,6 +13,7 @@
         <vue-slider
             class="time-slider"
             ref="slider"
+            role="button"
             v-model="observedPosition"
             :max="duration"
             :interval="0.1"
