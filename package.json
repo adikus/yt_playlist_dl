@@ -11,6 +11,7 @@
     "aws-sdk": "^2.1227.0",
     "bcrypt": "^5.0.1",
     "body-parser": "^1.20.0",
+    "cls-hooked": "^4.2.2",
     "connect-pg-simple": "^7.0.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -33,7 +34,8 @@
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
     "s3-client": "^4.4.2",
-    "sanitize-filename": "^1.6.3"
+    "sanitize-filename": "^1.6.3",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^3.0.3",

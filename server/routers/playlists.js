@@ -6,6 +6,7 @@ const Video = require('./../models/video');
 const exporter = require('./../services/exporter');
 const wrap = require('./../lib/express-router-promise').wrap;
 const asyncPromise = require('./../lib/async-promise');
+const logger = require("../logger");
 
 const router = express.Router();
 
@@ -72,9 +73,9 @@ router.post('/:id/upload', async function(req, res) {
         }
     });
 
-    console.log('-------------------------------------------');
-    console.log('All finished-------------------------------');
-    console.log('-------------------------------------------');
+    logger.log('-------------------------------------------');
+    logger.log('All finished-------------------------------');
+    logger.log('-------------------------------------------');
 });
 
 router.post('/:id/convert', async function(req, res) {
@@ -88,14 +89,14 @@ router.post('/:id/convert', async function(req, res) {
             try {
                 await video.convertAndUploadToS3();
             } catch (err) {
-                console.error(err);
+                logger.error(err);
             }
         }
     });
 
-    console.log('-------------------------------------------');
-    console.log('All finished-------------------------------');
-    console.log('-------------------------------------------');
+    logger.log('-------------------------------------------');
+    logger.log('All finished-------------------------------');
+    logger.log('-------------------------------------------');
 });
 
 router.get('/:id/export', wrap(async function(req, res) {
@@ -116,7 +117,7 @@ router.post('/:id/export', wrap(async function(req, res) {
         stream.cleanUp();
     });
 
-    console.log('Export done.');
+    logger.log('Export done.');
 }));
 
 router.post('/:id/metadata', wrap(async function(req, res) {

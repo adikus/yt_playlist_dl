@@ -4,6 +4,7 @@ const _ = require('lodash');
 const exec = require('child_process').exec;
 const JSZip = require("jszip");
 const download = require('./../services/download');
+const logger = require("../logger");
 
 const asyncPromise = require('./../lib/async-promise');
 
@@ -20,7 +21,7 @@ const execPromise = function(command) {
     return new Promise((resolve, reject) => {
         exec(command, function (error, stdout, stderr){
             if(error) {
-                console.error(stderr);
+                logger.error(stderr);
                 return reject(error);
             }
             resolve();
@@ -29,7 +30,7 @@ const execPromise = function(command) {
 };
 
 exports.exportAlbum = async function(playlist, items, indexes) {
-    console.log('Exporting album ' + playlist.title);
+    logger.log('Exporting album ' + playlist.title);
     let albumDir = 'dist/' + playlist.album_name;
 
     items = _(items).filter(item => { return indexes[item.id] > 0; } ).value();
@@ -47,14 +48,14 @@ exports.exportAlbum = async function(playlist, items, indexes) {
 
     await asyncPromise.eachLimit(items, 5, async function iteratee(item) {
         let name = item.playlistVideo.exportFileNameN(item.index);
-        console.log('Downloading ' + name);
+        logger.log('Downloading ' + name);
         let finalFileName = albumDir + '/' + name;
         files.push('./temp/' + finalFileName);
 
         if (!fs.existsSync('./temp/' + finalFileName)) {
             let mp3Upload = await item.getMp3Upload();
             await download.run(mp3Upload.S3Url(), finalFileName + '.temp');
-            console.log('Tagging ' + name);
+            logger.log('Tagging ' + name);
             fs.renameSync('./temp/' + finalFileName + '.temp', './temp/' + finalFileName);
 
             let command = 'mid3v2';
@@ -77,7 +78,7 @@ exports.exportAlbum = async function(playlist, items, indexes) {
     });
     let stream = zip.generateNodeStream({ streamFiles: true });
     stream.cleanUp = function() {
-        console.log('Cleaning up files.');
+        logger.log('Cleaning up files.');
         _(files).each(file => fs.unlinkSync(file));
         fs.unlinkSync('./temp/' + albumDir + '/cover.jpg');
         fs.rmdirSync('./temp/' + albumDir);

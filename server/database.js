@@ -1,6 +1,8 @@
 const orm = require('orm');
 const orm_timestamps = require('orm-timestamps');
 
+const logger = require('./logger');
+
 function defineTypes(db) {
     db.defineType('json', {
         datastoreType: (_prop) => {
@@ -44,7 +46,7 @@ function define(app, db, models, next) {
         const start = process.hrtime();
         originalExecMethod.apply(db.driver, [query, (err, res) => {
             const time = process.hrtime(start)[1] / 1000000;
-            console.log(`${time.toFixed(2)} ms | ${res?.length} | ${query}`)
+            logger.log(`${time.toFixed(2)} ms | ${res?.length} | ${query}`)
             cb(err, res)
         }]);
     };

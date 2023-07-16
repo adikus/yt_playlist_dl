@@ -2,6 +2,7 @@ const request = require('request-promise');
 const _ = require('lodash');
 
 const ytVideo = require('./yt_video');
+const logger = require("../logger");
 
 const ytApiUrl = 'https://www.googleapis.com/youtube/v3';
 
@@ -61,14 +62,14 @@ async function getVideosDetails(items, idsToIgnore, token) {
         maxResults: 50
     };
 
-    console.log(`Searching ${videoIds.length} videos to get video details`);
+    logger.log(`Searching ${videoIds.length} videos to get video details`);
     const videos = await ytVideo.search(token, qs);
     let videoObject = _(_(videos).map((video) => { return [video.id, video]; })).fromPairs().value();
     _(items).each((item) => { item.video = videoObject[item.contentDetails.videoId]; });
 }
 
 exports.getItemsPage = async function(id, pageToken, previousPageItems, token, params) {
-    console.log('Getting page', pageToken, 'from', id);
+    logger.log('Getting page', pageToken, 'from', id);
 
     const response = await request({
         url: ytApiUrl + '/playlistItems',

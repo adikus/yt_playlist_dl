@@ -6,6 +6,8 @@ const PlaylistVideo = require('./../models/playlist_video');
 const YtPlaylist = require('./yt_playlist');
 const moveFilePromise = require('./../lib/move_uploaded').moveFilePromise;
 const asyncPromise = require('./../lib/async-promise');
+const logger = require('../logger');
+
 
 exports.define = function(db, app) {
     return db.define("playlists", {
@@ -67,7 +69,7 @@ exports.define = function(db, app) {
             uploadAlbumCover: async function(imageFile) {
                 let name = crypto.randomBytes(16).toString('hex');
                 await moveFilePromise(imageFile, './temp/' + name);
-                console.log('Uploading cover for playlist', this.title);
+                logger.log('Uploading cover for playlist', this.title);
                 await this.app.s3Bucket.uploadFileFromFS('covers/' + name, './temp/' + name);
                 this.album_cover = name;
                 await this.saveAsync();
@@ -99,7 +101,7 @@ exports.define = function(db, app) {
                         let playlistVideo = video.playlistVideo;
                         playlistVideo.status = 'removed';
                         await playlistVideo.saveAsync();
-                        console.log(video.title + ' set as removed');
+                        logger.log(video.title + ' set as removed');
                     }
                 });
             }

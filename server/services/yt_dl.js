@@ -1,5 +1,6 @@
 const exec = require('child_process').exec;
 const _ = require('lodash');
+const logger = require("../logger");
 
 exports.get = function(id) {
     return new Promise(function (resolve, reject) {
@@ -18,7 +19,7 @@ exports.get = function(id) {
                     reject(e);
                 }
             }else{
-                console.error(error, stderr);
+                logger.error(error, stderr);
                 reject(error);
             }
         });

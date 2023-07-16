@@ -1,4 +1,5 @@
 const request = require('request-promise');
+const logger = require("../logger");
 
 async function ytCheck(req, res, next) {
     if (!req.session.ytAuth) {
@@ -9,7 +10,7 @@ async function ytCheck(req, res, next) {
 }
 
 async function getToken(req, res, params) {
-    console.log('Retrieving YT token for user', req.user.id);
+    logger.log('Retrieving YT token for user', req.user.id);
 
     const options = {
         method: 'POST',

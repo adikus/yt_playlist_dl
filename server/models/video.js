@@ -3,6 +3,7 @@ const _ = require('lodash');
 const resolveYt = require('./../services/lambdas').resolve;
 const convertToMp3 = require('./../services/lambdas').convert;
 const to = require('../lib/to').to;
+const logger = require('../logger');
 
 exports.define = function(db, app) {
     return db.define("videos", {
@@ -42,10 +43,10 @@ exports.define = function(db, app) {
             },
 
             uploadToS3: async function() {
-                console.log('Resolving ' + this.id + ' (' + this.title + ')');
+                logger.log('Resolving ' + this.id + ' (' + this.title + ')');
 
                 if(this.original_upload_id){
-                    console.log('Removing old upload for ' + this.id + ' (' + this.title + ')');
+                    logger.log('Removing old upload for ' + this.id + ' (' + this.title + ')');
                     let originalUpload = await this.getUpload();
                     await app.s3Bucket.removeFile(originalUpload.file);
                     this.original_upload_id = null;
@@ -54,13 +55,13 @@ exports.define = function(db, app) {
 
                 let [err, response] = await to(resolveYt(this.id));
                 if(err) {
-                    return console.log('Failed to resolve ' + this.id + ' (' + this.title + ')');
+                    return logger.log('Failed to resolve ' + this.id + ' (' + this.title + ')');
                 }
                 let upload = await this.app.models.upload.createAsync({
                     file: response.key,
                     file_type: response.ext
                 });
-                console.log('Saving upload for ' + this.id + ' (' + this.title + ')');
+                logger.log('Saving upload for ' + this.id + ' (' + this.title + ')');
                 this.original_upload_id = upload.id;
                 this.metadata = _(this.metadata).merge({format_id: response.format_id});
                 this.markAsDirty('metadata');
@@ -68,10 +69,10 @@ exports.define = function(db, app) {
             },
 
             convertAndUploadToS3: async function() {
-                console.log('Converting to mp3 ' + this.id + '(' + this.title + ')');
+                logger.log('Converting to mp3 ' + this.id + '(' + this.title + ')');
 
                 if(this.mp3_upload_id){
-                    console.log('Removing old mp3 upload for ' + this.id + ' (' + this.title + ')');
+                    logger.log('Removing old mp3 upload for ' + this.id + ' (' + this.title + ')');
                     let mp3Upload = await this.getMp3Upload();
                     if(mp3Upload.file) {
                         await app.s3Bucket.removeFile(mp3Upload.file);
@@ -89,7 +90,7 @@ exports.define = function(db, app) {
                     file_type: 'mp3'
                 });
 
-                console.log('Saving mp3 upload for ' + this.id + ' (' + this.title + ')');
+                logger.log('Saving mp3 upload for ' + this.id + ' (' + this.title + ')');
                 this.mp3_upload_id = mp3Upload.id;
                 await this.saveAsync();
             },
@@ -139,7 +140,7 @@ exports.createOrUpdate = async function(req, video, item, callback) {
         try {
             video = await video.saveAsync();
         } catch (err) {
-            console.error("Couldn't update video ", params, err.message);
+            logger.error("Couldn't update video ", params, err.message);
         }
     }else{
         try {
@@ -148,7 +149,7 @@ exports.createOrUpdate = async function(req, video, item, callback) {
             if (err.message.indexOf('duplicate key value violates unique constraint "videos_pkey"') > -1) {
                 return this.createOrUpdate(req, video, item, callback);
             } else {
-                console.error("Couldn't create video ", params, err.message);
+                logger.error("Couldn't create video ", params, err.message);
             }
         }
 

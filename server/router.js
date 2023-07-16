@@ -6,6 +6,7 @@ const { passwordCheck, apiKeyCheck } = require('./passport');
 const { ytCheck } = require('./services/yt_oauth')
 const assetsRouter = require("./routers/dev-assets-router");
 const manifest = require('./manifest');
+const wrap = require('./lib/express-router-promise').wrap;
 
 router.use(assetsRouter);
 
@@ -21,9 +22,9 @@ router.use('/cron', apiKeyCheck, require('./routers/cron'));
 router.use('/yt', passwordCheck, require('./routers/yt'));
 
 // Routes that require both authentication and YT account
-router.use('/playlists', passwordCheck, ytCheck, require('./routers/playlists'));
-router.use('/videos', passwordCheck, ytCheck, require('./routers/videos'));
-router.use('/playlist-videos', passwordCheck, ytCheck, require('./routers/playlist_videos'));
+router.use('/playlists', passwordCheck, wrap(ytCheck), require('./routers/playlists'));
+router.use('/videos', passwordCheck, wrap(ytCheck), require('./routers/videos'));
+router.use('/playlist-videos', passwordCheck, wrap(ytCheck), require('./routers/playlist_videos'));
 
 // Routes that require API key authentication
 router.use('/api/playlists', cors(), apiKeyCheck, require('./routers/api_playlists'));
