@@ -62,9 +62,7 @@ router.post('/:id/refresh', wrap(async function(req, res) {
     res.redirect('/playlists/' + req.playlist.id);
 }));
 
-router.post('/:id/upload', async function(req, res) {
-    res.redirect('/playlists/' + req.playlist.id);
-
+router.post('/:id/upload', wrap(async function(req, res) {
     let videos = await req.playlist.getVideos();
     await asyncPromise.eachLimit(videos, 50, async function iteratee(video) {
         let upload = await video.getUpload();
@@ -73,14 +71,10 @@ router.post('/:id/upload', async function(req, res) {
         }
     });
 
-    logger.log('-------------------------------------------');
-    logger.log('All finished-------------------------------');
-    logger.log('-------------------------------------------');
-});
-
-router.post('/:id/convert', async function(req, res) {
     res.redirect('/playlists/' + req.playlist.id);
+}));
 
+router.post('/:id/convert', wrap(async function(req, res) {
     let videos = await req.playlist.getVideos();
     await Video.preload(req, videos, 'mp3_upload_id', 'mp3Upload', 'upload');
 
@@ -94,10 +88,8 @@ router.post('/:id/convert', async function(req, res) {
         }
     });
 
-    logger.log('-------------------------------------------');
-    logger.log('All finished-------------------------------');
-    logger.log('-------------------------------------------');
-});
+    res.redirect('/playlists/' + req.playlist.id);
+}));
 
 router.get('/:id/export', wrap(async function(req, res) {
     let videos = await req.playlist.getVideos();
