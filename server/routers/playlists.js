@@ -19,7 +19,7 @@ router.get('/', wrap(async function(req, res) {
 }));
 
 router.get('/v2', wrap(async (req, res) => {
-    res.render('player', { title: 'Your YT playlists', user: req.user});
+    res.render('playlists_v2', { title: 'Your YT playlists', user: req.user});
 }));
 
 router.post('/refresh', wrap(async function(req, res) {

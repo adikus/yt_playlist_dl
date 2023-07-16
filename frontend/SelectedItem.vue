@@ -4,7 +4,7 @@ template(v-if="video")
         a.mt-1.d-inline-block(href='#', @click.prevent="$emit('selectedVideo', null)") &lt; {{playlist.title}}
         h2.mt-2 {{video.title}}
 
-        .d-flex.flex-row
+        .d-flex.flex-row.flex-wrap
             .badge.badge-dark.mr-2 {{video.metadata.channelTitle}}
             .badge.badge-light.mr-2 {{video.playlistVideo.status}}
             .badge.badge-light.mr-2 {{video.playlistVideo.created_at}}
