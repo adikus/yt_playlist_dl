@@ -1,22 +1,12 @@
 extends layout
 
 block content
-    .clearfix
-        form.form-inline.m-3.float-sm-right
-            .input-group
-                .input-group-text
-                    label.m-0(for='api_key') Your API Key
-                input#api_key.form-control(name='api_key', value=user.api_key)
-        h1.mt-1 YT Playlists
-
-
-
-    .d-flex.flex-row
+    .d-flex.flex-row.mt-4
         .flex-shrink-0.border.rounded.p-3.bg-white.sticky-top.max-h-sticky-col.left-playlists-sidebar.mr-4
             selected-item(:playlist="selectedPlaylist", :video="selectedVideo", :playing-title="title", :playing="playing", @selected-video="selectVideo", @play-video="playVideo")
             .mt-4.pt-4.border-top.border-dark
                 queue-controller(:title="title", :playing="playing", @play-video="playVideo")
-        .flex-grow-1.border.rounded.p-3.bg-white
+        .flex-grow-1.border.rounded.p-3.bg-white.main-playlists-container
             playlists(@selected-playlist="selectPlaylist", @selected-video="selectVideo")
 
 
