@@ -20,7 +20,13 @@ module.exports = {
                 path: applicationNamespace.get('REQUEST_PATH')
             }
         }
+        if (applicationNamespace.get('USER_ID')) {
+            context.user = {
+                id: applicationNamespace.get('USER_ID'),
+                username: applicationNamespace.get('USER_NAME')
+            }
+        }
 
-        return context;
+        return JSON.stringify(context);
     }
 }
