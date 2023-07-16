@@ -61,7 +61,7 @@ module.exports = {
         passport.use('api-key', new LocalAPIKeyStrategy(
             { passReqToCallback: true },
             async (req, api_key, done) => {
-                asyncContext(async () => {
+                asyncContext(req, async () => {
                     if(process.env.CRON_TOKEN === api_key) return done(null, {});
 
                     const user = await app.models.user.oneAsync({ api_key: api_key });
