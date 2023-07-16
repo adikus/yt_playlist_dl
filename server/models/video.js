@@ -26,10 +26,12 @@ exports.define = function(db, app) {
         },
         methods: {
             getUpload: async function() {
+                if (!this.original_upload_id) return null;
                 return this.app.models.upload.oneAsync({id: this.original_upload_id});
             },
 
             getMp3Upload: async function() {
+                if (!this.mp3_upload_id) return null;
                 return this.app.models.upload.oneAsync({id: this.mp3_upload_id});
             },
 
