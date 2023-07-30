@@ -24,7 +24,7 @@ module.exports = {
         passport.use('local', new LocalStrategy(
             { passReqToCallback: true },
             async (req, username, password, done) => {
-                asyncContext(async () => {
+                asyncContext(req, async () => {
                     const user = await app.models.user.oneAsync({ username: username });
                     if (!user) return done(null, false, { message: 'Incorrect username.' });
 
@@ -39,8 +39,8 @@ module.exports = {
 
         passport.use('remember-me', new RememberMeStrategy(
             { maxAge: 1000 * 3600 * 24 * 90, passReqToCallback: true }, // 90 days
-            async (token, done) => {
-                asyncContext(async () => {
+            async (req, token, done) => {
+                asyncContext(req, async () => {
                     const user = await app.models.user.oneAsync({ remember_token: token });
 
                     if (!user) return done(null, false);
