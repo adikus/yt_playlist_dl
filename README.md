@@ -10,11 +10,12 @@ Migration files are in `data/migrations`.
 ## TODO
 
 * [ ] Add a per-user queue model, records in the queue can be implicit or explicit
-* [ ] Fix video status being set to removed (or stop setting the status at all)
-* [ ] Figure out why remember tokens do not work
-* [ ] Redesign UI
-  * Main playlist view should be split into 3 (or more?) panes - Queue | Playlist | Video
-  * Also redesign other views - organize content so that it looks more polished
+* [x] Fix video status being set to removed (or stop setting the status at all)
+* [x] Figure out why remember tokens do not work
+* [x] Redesign UI
+  * [x] Main playlist view should be split into 3 (or more?) panes - Queue | Playlist | Video
+  * [x] Also redesign other views - organize content so that it looks more polished
+  * [ ] Make the new view mobile compatible - make the sidebar slide in / out
 * [ ] Make search user content wide instead of playlist wide - redesign accordingly
 * [ ] Add auto-constructing playlists 
   * [ ] Define YouTube channels from which they should pull - build UI for this
