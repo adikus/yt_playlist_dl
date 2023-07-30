@@ -22,7 +22,7 @@ module.exports = {
                 applicationNamespace.set('USER_NAME', req.user.username);
             }
 
-            await promise();
+            await promise;
         })
     }
 }
