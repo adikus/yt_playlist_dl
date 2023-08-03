@@ -5,6 +5,7 @@ services:
     build: .
     ports:
       - 3006:3000
+    restart: always
     volumes:
       - ./../../config/data:/app/data
       - ./.env:/app/.env
