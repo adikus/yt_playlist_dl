@@ -57,7 +57,7 @@ class RememberMeStrategy extends passport.Strategy {
             // cookie.
             const issued = (err, val) => {
                 if (err) { return this.error(err); }
-                res.cookie(this._key, val, this._opts);
+                req.res.cookie(this._key, val, this._opts);
                 return this.success(user, info);
             }
 
