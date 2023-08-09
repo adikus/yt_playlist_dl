@@ -38,7 +38,7 @@ module.exports = {
         ));
 
         passport.use('remember-me', new RememberMeStrategy(
-            { maxAge: 1000 * 3600 * 24 * 90, passReqToCallback: true }, // 90 days
+            { cookie: { maxAge: 1000 * 3600 * 24 * 90 }, passReqToCallback: true }, // 90 days
             async (req, token, done) => {
                 asyncContext(req, async () => {
                     const user = await app.models.user.oneAsync({ remember_token: token });
