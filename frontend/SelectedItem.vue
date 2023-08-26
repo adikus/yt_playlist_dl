@@ -1,7 +1,7 @@
 <template lang="pug">
 template(v-if="video")
         img.thumbnail.mr-2.w-100(v-lazy="video.metadata.thumbnails.maxres?.url || video.metadata.thumbnails.high.url")
-        a.mt-1.d-inline-block(href='#', @click.prevent="$emit('selectedVideo', null)") &lt; {{playlist.title}}
+        a.mt-1.d-inline-block(href='#', v-if="playlist", @click.prevent="$emit('selectedVideo', null)") &lt; {{playlist.title}}
         h2.mt-2 {{video.title}}
 
         .d-flex.flex-row.flex-wrap
@@ -89,13 +89,13 @@ export default {
     methods: {
         async savePlaylist() {
             const response = await fetch(
-                    `/playlists/${this.playlist.id}/metadata`,
-                    {
-                        method: 'post',
-                        body: JSON.stringify({ autoupdate: this.playlist.autoupdate }),
-                        credentials: "include",
-                        headers: { 'Accept': 'application/json', "Content-Type": "application/json"  }
-                    }
+                `/playlists/${this.playlist.id}/metadata`,
+                {
+                    method: 'post',
+                    body: JSON.stringify({ autoupdate: this.playlist.autoupdate }),
+                    credentials: "include",
+                    headers: { 'Accept': 'application/json', "Content-Type": "application/json"  }
+                }
             );
             if (response.status !== 200){
                 const body = await response.body();

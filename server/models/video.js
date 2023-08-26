@@ -182,3 +182,9 @@ exports.preloadCustomUploads = async function(req, videos) {
         video.customUploads.push(upload);
     });
 };
+
+exports.preloadEverything = async (req, videos) => {
+    await this.preload(req, videos, 'original_upload_id', 'originalUpload', 'upload');
+    await this.preload(req, videos, 'mp3_upload_id', 'mp3Upload', 'upload');
+    await this.preloadCustomUploads(req, videos);
+};

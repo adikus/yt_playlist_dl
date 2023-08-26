@@ -5,6 +5,13 @@
         spinner.mr-1(size="16", v-if="refreshing")
         span.fa.fa-refresh.mr-1(v-else)
         | Refresh playlists
+.border-bottom.py-2(v-if="foundVideos.length > 0")
+    div.mt-2
+        .d-flex.flex-row.flex-wrap
+            div.d-flex.flex-row.border.rounded.p-1.m-1(v-for="video in foundVideos", role="button", @click.prevent="selectVideo(video)", :class='{ "bg-grey-md": selectedVideo === video }')
+                img.thumbnail-small.mr-2(v-lazy="videoImage(video)")
+                small.video-title(:title="video.title") {{video.title}}
+
 .border-bottom.py-2(v-for="playlist in playlists")
     .d-flex.flex-wrap
         img.thumbnail.mr-2(v-lazy="playlistImage(playlist)", role="button", @click.prevent="selectPlaylist(playlist)")
@@ -37,7 +44,8 @@ export default {
             selectedPlaylist: null,
             selectedVideo: null,
             refreshing: false,
-            search: ""
+            search: "",
+            foundVideos: []
         };
     },
     emits: ['selectedPlaylist', 'selectedVideo'],
@@ -45,16 +53,17 @@ export default {
         const response = await fetch('/playlists', { credentials: "include", headers: { 'Accept': 'application/json' }});
         const body = await response.json();
         this.playlists = body.playlists;
+        this.debouncedSearch = _.debounce(this.executeSearch, 150)
     },
     computed: {
         searchDebounced: {
             get() {
                 return this.search;
             },
-            set: _.debounce(async (search) => {
-                console.log(search)
+            set(search) {
                 this.search = search;
-            }, 150)
+                this.debouncedSearch()
+            }
         }
     },
     methods: {
@@ -88,6 +97,18 @@ export default {
         },
         isSelected(playlist) {
             return playlist.id === this.selectedPlaylist?.id;
+        },
+        async executeSearch() {
+            if (this.search.length === 0) {
+                this.foundVideos = []
+                return
+            }
+
+            const response = await fetch(
+                    `/videos/search?query=${this.search}`,
+                    { credentials: "include", headers: { 'Accept': 'application/json' } }
+            );
+            this.foundVideos = (await response.json())?.videos ?? []
         }
     }
 };

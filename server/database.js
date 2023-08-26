@@ -46,7 +46,7 @@ function define(app, db, models, next) {
         const start = process.hrtime();
         originalExecMethod.apply(db.driver, [query, (err, res) => {
             const time = process.hrtime(start)[1] / 1000000;
-            logger.log(`${time.toFixed(2)} ms | ${res?.length} | ${query.replaceAll(/IN\s*\(((?:'?.+'?){10,})\)/ig, 'IN ([redacted])')}`)
+            logger.log(`${time.toFixed(2)} ms | ${res?.length ?? '-'} | ${query.replaceAll(/IN\s*\(((?:'?.+'?){10,})\)/ig, 'IN ([redacted])')}`)
             cb(err, res)
         }]);
     };

@@ -39,10 +39,7 @@ router.all('/:id*', wrap(async function(req, res, next) {
 
 router.get('/:id', wrap(async function(req, res) {
     let videos = await req.playlist.getVideos();
-
-    await Video.preload(req, videos, 'original_upload_id', 'originalUpload', 'upload');
-    await Video.preload(req, videos, 'mp3_upload_id', 'mp3Upload', 'upload');
-    await Video.preloadCustomUploads(req, videos);
+    await Video.preloadEverything(req, videos);
 
     if (req.accepts("html")) {
         if (videos.length === 0){
