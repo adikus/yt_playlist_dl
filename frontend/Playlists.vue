@@ -1,6 +1,6 @@
 <template lang="pug">
 .d-flex.flex-row.justify-content-between
-    input.form-control.flex-grow-1.w-auto.mr-2(type="text", placeholder="Search")
+    input.form-control.flex-grow-1.w-auto.mr-2(type="text", placeholder="Search", v-model="searchDebounced")
     a.btn.btn-primary.d-none.d-md-block(href='#', @click.prevent="refresh")
         spinner.mr-1(size="16", v-if="refreshing")
         span.fa.fa-refresh.mr-1(v-else)
@@ -27,6 +27,7 @@
 
 <script>
 import Spinner from "./Spinner.vue";
+import _ from "lodash";
 
 export default {
     components: { Spinner },
@@ -35,7 +36,8 @@ export default {
             playlists: [],
             selectedPlaylist: null,
             selectedVideo: null,
-            refreshing: false
+            refreshing: false,
+            search: ""
         };
     },
     emits: ['selectedPlaylist', 'selectedVideo'],
@@ -43,6 +45,17 @@ export default {
         const response = await fetch('/playlists', { credentials: "include", headers: { 'Accept': 'application/json' }});
         const body = await response.json();
         this.playlists = body.playlists;
+    },
+    computed: {
+        searchDebounced: {
+            get() {
+                return this.search;
+            },
+            set: _.debounce(async (search) => {
+                console.log(search)
+                this.search = search;
+            }, 150)
+        }
     },
     methods: {
         playlistImage(playlist) {

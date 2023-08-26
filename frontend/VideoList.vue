@@ -67,7 +67,7 @@
                         const scorableFields = [
                             video.id,
                             video.title,
-                            video.metadata.channelTitle,
+                            video.channel,
                             video.metadata.title,
                             video.metadata.artist,
                             video.metadata.genre,

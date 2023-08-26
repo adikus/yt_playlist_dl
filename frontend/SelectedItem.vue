@@ -5,7 +5,7 @@ template(v-if="video")
         h2.mt-2 {{video.title}}
 
         .d-flex.flex-row.flex-wrap
-            .badge.badge-dark.mr-2 {{video.metadata.channelTitle}}
+            .badge.badge-dark.mr-2 {{video.channel}}
             .badge.badge-light.mr-2 {{video.playlistVideo.status}}
             .badge.badge-light.mr-2 {{video.playlistVideo.created_at}}
             .badge.badge-success.mr-2(v-if="video.originalUpload?.url") Uploaded

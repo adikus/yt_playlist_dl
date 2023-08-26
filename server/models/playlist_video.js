@@ -28,7 +28,7 @@ exports.define = function(db, app) {
         methods: {
             guessMetadata: function() {
                 if(!this.guess){
-                    this.guess = metadataGuesser.guess(this.video.title, this.video.metadata.channelTitle);
+                    this.guess = metadataGuesser.guess(this.video.title, this.video.channel);
                 }
                 return this.guess;
             },

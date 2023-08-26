@@ -37,7 +37,7 @@ const app = createApp({
             if ('mediaSession' in navigator) {
                 navigator.mediaSession.metadata = new MediaMetadata({
                     title: video.title,
-                    artist: video.metadata.channelTitle,
+                    artist: video.channel,
                     artwork: Object.entries(video.metadata.thumbnails).map(([_, t]) => ({ src: t.url, sizes: `${t.width}x${t.height}` }))
                 })
                 navigator.mediaSession.setActionHandler('play', () => this.$refs.audioController.setPlay());

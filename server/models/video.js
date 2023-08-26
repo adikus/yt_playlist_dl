@@ -9,6 +9,7 @@ exports.define = function(db, app) {
     return db.define("videos", {
         id         : String,
         title      : String,
+        channel      : String,
         status     : String,
         metadata   : { type: 'json' },
         position   : Number,
@@ -36,7 +37,7 @@ exports.define = function(db, app) {
             },
 
             stringify: function() {
-                return _(this).pick('id', 'title', 'metadata').extend({
+                return _(this).pick('id', 'title', 'channel', 'metadata').extend({
                     playlistVideo: this.playlistVideo.stringify(),
                     originalUpload: this.originalUpload && this.originalUpload.stringify(),
                     mp3Upload: this.mp3Upload && this.mp3Upload.stringify(),
@@ -124,6 +125,7 @@ exports.createOrUpdate = async function(req, video, item, callback) {
     let params = {
         id: item.video.id,
         title: item.video.snippet.title,
+        channel: item.video.snippet.channelTitle,
         metadata: {thumbnails: item.video.snippet.thumbnails, channelTitle: item.video.snippet.channelTitle},
         created_at: item.video.snippet.publishedAt ? new Date(item.video.snippet.publishedAt) : null,
         status: 'deprecated'

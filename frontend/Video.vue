@@ -5,7 +5,7 @@
         .row
             .col-sm-3
                 small
-                    | {{ video.metadata.channelTitle }}
+                    | {{ video.channel }}
                     a.float-sm-right(:href="`https://www.youtube.com/watch?v=${video.id}`") {{ video.id }}
                 play-audio-image(:image-src="video.metadata.thumbnails.default.url", :title="video.title", :url="playableUrl", @click="playTrack(video.title, playableUrl, index)")
             .col-sm-4
