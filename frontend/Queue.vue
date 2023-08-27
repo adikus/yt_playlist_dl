@@ -16,12 +16,12 @@
         @click.prevent="$emit('playVideo', video)"
         :class='{ "border-top": index === 0, "rounded-top": index === 0, "rounded-bottom": index === queue.length - 1 }'
     >
-        <div v-if="video.id === playingVideo.id" class="bars mx-1" :class='{ "bars-active": playing }'>
+        <div v-if="video.id === playingVideo.id" class="bars mr-2" :class='{ "bars-active": playing }'>
             <span/>
             <span/>
             <span/>
         </div>
-        <span v-else class="d-inline-block w-15px mx-1">&nbsp;</span>
+        <span v-else class="d-inline-block w-15px mr-2">&nbsp;</span>
         <span class="flex-grow-1">{{video.title}}</span>
         <i class="fa fa-trash mx-1 flex-shrink-1 on-parent-hover" @click.stop.prevent="removeFromQueue(video)"></i>
     </div>
