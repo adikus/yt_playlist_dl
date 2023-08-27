@@ -12,4 +12,4 @@ block content
 block footer
     footer.bg-white.footer(v-if="playingVideo")
         .container-fluid
-            audio-controller(:title="playingVideo.title", :url="videoUrl", :playing="playing" v-model:position="position" @update:duration="duration = $event" @update:playing="updatePlaying($event)" @playback:end="playbackEnded")
+            audio-controller(:title="playingVideo.title", :url="videoUrl", :playing="playing", v-model:position="position", @update:duration="duration = $event", @update:playing="updatePlaying($event)", @playback:end="playbackEnded", @play-previous="playPrevious()", @play-next="playNext()")

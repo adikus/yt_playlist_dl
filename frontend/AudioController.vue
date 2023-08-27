@@ -23,8 +23,10 @@
             @drag-start="draggingSlider=true"
             @drag-end="draggingSlider=false; setPosition()"
         ></vue-slider>
+        <i class="fa fa-step-backward mr-2 playback-control" @click="$emit('playPrevious')"></i>
         <i class="fa fa-play mr-2 playback-control" v-if="!playing" @click="setPlay"></i>
         <i class="fa fa-pause mr-2 playback-control" v-if="playing" @click="setPause"></i>
+        <i class="fa fa-step-forward mr-2 playback-control" @click="$emit('playNext')"></i>
         {{minutes}}:{{seconds}}
         &nbsp; | &nbsp;
         {{title}}
@@ -44,6 +46,7 @@
 
     export default {
         props: ['title', 'url', 'playing', 'position'],
+        emits: ['update:duration', 'update:position', 'update:playing', 'playback:end', 'playPrevious', 'playNext'],
         data () {
             return {
                 observedPosition: 0,

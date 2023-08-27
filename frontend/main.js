@@ -78,13 +78,35 @@ const app = createApp({
         playbackEnded() {
             this.playing = false;
             localStorage.setItem('audio.playing', this.playing);
+            this.playNext();
+        },
+        playPrevious() {
+            if (this.position > 3) {
+                this.position = 0
+                return
+            }
 
+            if(this.explicitQueue.length) {
+                this.playPreviousFrom(this.explicitQueue)
+            } else if(this.implicitQueue.length) {
+                this.playPreviousFrom(this.implicitQueue)
+            }
+        },
+        playNext() {
             if(this.explicitQueue.length) {
                 this.playNextFrom(this.explicitQueue)
             } else if(this.implicitQueue.length) {
                 this.playNextFrom(this.implicitQueue)
             } else if (this.playingIndex) {
                 this.playingIndex = parseInt(this.playingIndex) + 1;
+            }
+        },
+        playPreviousFrom(queue) {
+            const index = queue.findIndex((video) => video.id === this.playingVideo.id)
+            if (index > 0) {
+                this.playVideo(queue[index - 1])
+            } else if (index === -1) {
+                this.playVideo(queue.at(-1))
             }
         },
         playNextFrom(queue) {
@@ -118,9 +140,13 @@ const app = createApp({
             navigator.mediaSession.setActionHandler('seekto', (details) => this.position = details.seekTime);
             navigator.mediaSession.setActionHandler('seekbackward', (details) => this.position -= details.seekOffset);
             navigator.mediaSession.setActionHandler('seekforward', (details) => this.position += details.seekOffset);
+            navigator.mediaSession.setActionHandler('previoustrack', () => this.playPrevious());
+            navigator.mediaSession.setActionHandler('nexttrack', () => this.playNext());
         },
-        enqueue(video) {
-            if (!this.explicitQueue.some((v) => v.id === video.id)) this.explicitQueue.push(video)
+        enqueue(...videos) {
+            videos.forEach((video) => {
+                if (!this.explicitQueue.some((v) => v.id === video.id)) this.explicitQueue.push(video)
+            })
             localStorage.setItem('audio.explicitQueue', JSON.stringify(this.explicitQueue));
         },
         clearQueue() {
