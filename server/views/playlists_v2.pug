@@ -1,11 +1,14 @@
 extends layout
 
 block content
-    .d-flex.flex-row.mt-4
-        .flex-shrink-0.border.rounded.p-3.bg-white.sticky-top.max-h-sticky-col.left-playlists-sidebar.mr-4
-            selected-item(:playlist="selectedPlaylist", :video="selectedVideo", :playing-video="playingVideo", :playing="playing", @selected-video="selectVideo", @play-video="playVideo" @enqueue="enqueue")
-            .mt-4.pt-4.border-top.border-dark
-                queue(:playing-video="playingVideo", :playing="playing", :implicit-queue="implicitQueue", :explicit-queue="explicitQueue", @play-video="playVideo", @update-queue="updateQueue($event)")
+    .d-md-flex.flex-md-row.mt-md-4
+        .flex-md-shrink-0.mr-md-4.left-playlists-container
+            .border.rounded.p-3.bg-white.sticky-top.max-h-sticky-col.left-playlists-sidebar(:class='{ "shown": sidebarOpen }')
+                .fa.fa-caret-left.position-absolute.border-left.border-bottom.px-2.d-md-none.sidebar-close(@click="closeSidebar")
+                .fa.fa-caret-right.position-absolute.border-right.border-bottom.px-2.d-md-none.sidebar-open(@click="openSidebar")
+                selected-item(:playlist="selectedPlaylist", :video="selectedVideo", :playing-video="playingVideo", :playing="playing", @selected-video="selectVideo", @play-video="playVideo" @enqueue="enqueue")
+                .mt-4.pt-4.border-top.border-dark
+                    queue(:playing-video="playingVideo", :playing="playing", :implicit-queue="implicitQueue", :explicit-queue="explicitQueue", @play-video="playVideo", @update-queue="updateQueue($event)")
         .flex-grow-1.border.rounded.p-3.bg-white.main-playlists-container
             playlists(@selected-playlist="selectPlaylist", @selected-video="selectVideo")
 

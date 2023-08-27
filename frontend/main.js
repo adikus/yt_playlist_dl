@@ -16,6 +16,7 @@ import SelectedItem from "./SelectedItem.vue";
 const app = createApp({
     data() {
         return {
+            sidebarOpen: false,
             title: null,
             url: null,
             position: 0,
@@ -39,6 +40,12 @@ const app = createApp({
         SelectedItem
     },
     methods: {
+        openSidebar() {
+            this.sidebarOpen = true;
+        },
+        closeSidebar() {
+            this.sidebarOpen = false
+        },
         playVideo(video, position=0) {
             if (this.playingVideo?.id === video.id) {
                 this.playing = !this.playing;
@@ -120,8 +127,9 @@ const app = createApp({
             localStorage.setItem('audio.playing', this.playing);
         },
         selectVideo(video, implicitQueue) {
-            this.selectedImplicitQueue = implicitQueue
+            this.selectedImplicitQueue = implicitQueue;
             this.selectedVideo = video;
+            this.openSidebar();
         },
         selectPlaylist(playlist) {
             this.selectedPlaylist = playlist;
@@ -164,6 +172,7 @@ const app = createApp({
         try {
             this.playingVideo = JSON.parse(serializedVideo)
             this.selectedVideo = this.playingVideo;
+            this.openSidebar();
             this.updateMediaSession(this.playingVideo);
         } catch (e) {
             console.error(e)

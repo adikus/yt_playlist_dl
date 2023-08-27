@@ -11,7 +11,7 @@
         </a>
     </div>
     <div
-        class="pointer border-right border-left border-bottom px-2 py-1 bg-light text-truncate d-flex flex-row align-items-center"
+        class="pointer border-right border-left border-bottom px-2 py-1 bg-light d-flex flex-row align-items-center"
         v-for="(video, index) in queue"
         @click.prevent="$emit('playVideo', video)"
         :class='{ "border-top": index === 0, "rounded-top": index === 0, "rounded-bottom": index === queue.length - 1 }'
@@ -22,7 +22,7 @@
             <span/>
         </div>
         <span v-else class="d-inline-block w-15px mr-2">&nbsp;</span>
-        <span class="flex-grow-1">{{video.title}}</span>
+        <span class="text-truncate">{{video.title}}</span>
         <i class="fa fa-trash mx-1 flex-shrink-1 on-parent-hover" @click.stop.prevent="removeFromQueue(video)"></i>
     </div>
 </template>
@@ -68,15 +68,6 @@
 }
 .pointer {
     cursor: pointer;
-}
-.flex-grow-1 {
-    flex-grow: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.flex-shrink-1 {
-    flex-shrink: 1;
 }
 div {
     &> .on-parent-hover {
