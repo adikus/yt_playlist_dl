@@ -112,12 +112,12 @@ const app = createApp({
         }
 
         if (localStorage.getItem('audio.position')) {
-            this.position = parseFloat(localStorage.getItem('audio.position')) || 0;
+            setTimeout(() => this.position = parseFloat(localStorage.getItem('audio.position')) || 0, 50)
         }
 
         if (localStorage.getItem('audio.playing')) {
-            const openTabs = Object.keys( JSON.parse(localStorage.getItem('audio.tabs') || '{}') )
-            if (openTabs.length <= 1) this.playing = localStorage.getItem('audio.playing') === "true";
+            const openTabs = JSON.parse(localStorage.getItem('audio.tabs') || '{}')
+            if (Object.keys(openTabs).length <= 1) this.playing = localStorage.getItem('audio.playing') === "true";
         }
 
         // #MARK LEGACY, remove with rest of v1
@@ -140,19 +140,20 @@ const app = createApp({
     }
 });
 
-app.use(VueLazyload);
-app.mount('#page-container');
-
-window.app = app;
-window.jQuery = window.$ = $;
-
-window.addEventListener("load", (_event) => {
+const setUpTabs = () => {
     const hash = Array(8).fill(0).map(_ => Math.random().toString(36).charAt(2)).join('');
     sessionStorage.setItem('audio.tabHash', hash);
     const tabs = JSON.parse(localStorage.getItem('audio.tabs') || '{}');
-    tabs[hash] = true;
+
+    Object.entries(tabs).forEach(([key, time]) => {
+        if (Date.parse(time) < new Date().getTime() - 1000 * 60 * 60 * 24) delete tabs[key];
+    });
+
+    tabs[hash] = new Date();
     localStorage.setItem('audio.tabs', JSON.stringify(tabs));
-});
+};
+
+setUpTabs();
 
 window.addEventListener("beforeunload", (_event) => {
     const hash = sessionStorage.getItem('audio.tabHash');
@@ -160,3 +161,9 @@ window.addEventListener("beforeunload", (_event) => {
     delete tabs[hash];
     localStorage.setItem('audio.tabs', JSON.stringify(tabs));
 });
+
+app.use(VueLazyload);
+app.mount('#page-container');
+
+window.app = app;
+window.jQuery = window.$ = $;
