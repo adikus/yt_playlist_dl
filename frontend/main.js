@@ -10,7 +10,7 @@ import VueLazyload from 'vue3-lazyload'
 import AudioController from './AudioController.vue'
 import Playlists from './Playlists.vue'
 import VideoList from './VideoList.vue'
-import QueueController from './QueueController.vue'
+import Queue from './Queue.vue'
 import SelectedItem from "./SelectedItem.vue";
 
 const app = createApp({
@@ -25,14 +25,17 @@ const app = createApp({
             playing: false,
             playingVideo: null,
             selectedPlaylist: null,
-            selectedVideo: null
+            selectedVideo: null,
+            explicitQueue: [],
+            selectedImplicitQueue: [],
+            implicitQueue: [],
         }
     },
     components: {
         AudioController,
         Playlists,
         VideoList,
-        QueueController,
+        Queue,
         SelectedItem
     },
     methods: {
@@ -46,11 +49,17 @@ const app = createApp({
 
             this.updateMediaSession(video);
 
+            this.selectedVideo = video;
             this.playingVideo = video;
             localStorage.setItem('audio.currentVideo', JSON.stringify(this.playingVideo));
 
             this.playing = true;
             localStorage.setItem('audio.playing', this.playing);
+
+            if (this.selectedImplicitQueue.length) {
+                this.implicitQueue = this.selectedImplicitQueue
+                localStorage.setItem('audio.implicitQueue', JSON.stringify(this.implicitQueue));
+            }
 
             this.position = position;
         },
@@ -68,13 +77,28 @@ const app = createApp({
         },
         playbackEnded() {
             this.playing = false;
-            this.playingIndex = parseInt(this.playingIndex) + 1;
+            localStorage.setItem('audio.playing', this.playing);
+
+            if(this.explicitQueue.length) {
+                this.playNextFrom(this.explicitQueue)
+            } else if(this.implicitQueue.length) {
+                this.playNextFrom(this.implicitQueue)
+            } else if (this.playingIndex) {
+                this.playingIndex = parseInt(this.playingIndex) + 1;
+            }
+        },
+        playNextFrom(queue) {
+            const index = queue.findIndex((video) => video.id === this.playingVideo.id)
+            if (index < queue.length - 1) {
+                this.playVideo(queue[index + 1])
+            }
         },
         updatePlaying(playing) {
             this.playing = playing;
             localStorage.setItem('audio.playing', this.playing);
         },
-        selectVideo(video) {
+        selectVideo(video, implicitQueue) {
+            this.selectedImplicitQueue = implicitQueue
             this.selectedVideo = video;
         },
         selectPlaylist(playlist) {
@@ -94,6 +118,14 @@ const app = createApp({
             navigator.mediaSession.setActionHandler('seekto', (details) => this.position = details.seekTime);
             navigator.mediaSession.setActionHandler('seekbackward', (details) => this.position -= details.seekOffset);
             navigator.mediaSession.setActionHandler('seekforward', (details) => this.position += details.seekOffset);
+        },
+        enqueue(video) {
+            if (!this.explicitQueue.some((v) => v.id === video.id)) this.explicitQueue.push(video)
+            localStorage.setItem('audio.explicitQueue', JSON.stringify(this.explicitQueue));
+        },
+        clearQueue() {
+            this.explicitQueue = []
+            localStorage.setItem('audio.explicitQueue', JSON.stringify(this.explicitQueue));
         }
     },
     computed: {
@@ -109,6 +141,14 @@ const app = createApp({
             this.updateMediaSession(this.playingVideo);
         } catch (e) {
             console.error(e)
+        }
+
+        if (localStorage.getItem('audio.explicitQueue')) {
+            this.explicitQueue = JSON.parse(localStorage.getItem('audio.explicitQueue'))
+        }
+
+        if (localStorage.getItem('audio.implicitQueue')) {
+            this.implicitQueue = JSON.parse(localStorage.getItem('audio.implicitQueue'))
         }
 
         if (localStorage.getItem('audio.position')) {

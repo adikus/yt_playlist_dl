@@ -5,10 +5,10 @@
         spinner.mr-1(size="16", v-if="refreshing")
         span.fa.fa-refresh.mr-1(v-else)
         | Refresh playlists
-.border-bottom.py-2(v-if="foundVideos.length > 0")
+.border-bottom.py-2(v-if="foundVideos.length")
     div.mt-2
         .d-flex.flex-row.flex-wrap
-            div.d-flex.flex-row.border.rounded.p-1.m-1(v-for="video in foundVideos", role="button", @click.prevent="selectVideo(video)", :class='{ "bg-grey-md": selectedVideo === video }')
+            div.d-flex.flex-row.border.rounded.p-1.m-1(v-for="video in foundVideos", role="button", @click.prevent="selectVideo(video, foundVideos)", :class='{ "bg-grey-md": selectedVideo === video }')
                 img.thumbnail-small.mr-2(v-lazy="videoImage(video)")
                 small.video-title(:title="video.title") {{video.title}}
 
@@ -25,7 +25,7 @@
 
     div.mt-2
         .d-flex.flex-row.flex-wrap
-            div.d-flex.flex-row.border.rounded.p-1.m-1(v-for="video in playlist.shownVideos", role="button", @click.prevent="selectVideo(video)", :class='{ "bg-grey-md": selectedVideo === video }')
+            div.d-flex.flex-row.border.rounded.p-1.m-1(v-for="video in playlist.shownVideos", role="button", @click.prevent="selectVideo(video, playlist.shownVideos)", :class='{ "bg-grey-md": selectedVideo === video }')
                 img.thumbnail-small.mr-2(v-lazy="videoImage(video)")
                 small.video-title(:title="video.title") {{video.title}}
 
@@ -91,9 +91,9 @@ export default {
                 this.$emit('selectedPlaylist', playlist);
             }
         },
-        selectVideo(video) {
+        selectVideo(video, implicitQueue) {
             this.selectedVideo = video;
-            this.$emit('selectedVideo', video);
+            this.$emit('selectedVideo', video, implicitQueue);
         },
         isSelected(playlist) {
             return playlist.id === this.selectedPlaylist?.id;

@@ -18,6 +18,9 @@ template(v-if="video")
             a.btn.btn-primary(href='#', v-else, @click.prevent="$emit('playVideo', video)")
                 span.fa.fa-play.mr-1
                 | Play
+            a.btn.btn-success(href='#', @click.prevent="$emit('enqueue', video)")
+                span.fa.fa-plus.mr-1
+                | Add to queue
 
 
 template(v-else-if="playlist")
@@ -58,7 +61,7 @@ export default {
             converting: false
         };
     },
-    emits: ['selectedVideo', 'playVideo'],
+    emits: ['selectedVideo', 'playVideo', 'enqueue', 'update:implicitQueue'],
     watch: {
         async playlist(playlist, oldPlaylist) {
             if (playlist) {
