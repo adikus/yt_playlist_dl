@@ -11,7 +11,7 @@ block content
                         queue(:playing-video="playingVideo", :playing="playing", :implicit-queue="implicitQueue", :explicit-queue="explicitQueue", @play-video="playVideo", @update-queue="updateQueue($event)")
             .flex-grow-1.border.rounded.bg-white.main-playlists-container
                 .fa.fa-caret-right.sticky-top.border-right.border-bottom.px-2.d-md-none.sidebar-open(@click="openSidebar")
-                .p-3
+                .p-3.sidebar-open-offset-margin
                     playlists(@selected-playlist="selectPlaylist", @selected-video="selectVideo")
 
 block footer
