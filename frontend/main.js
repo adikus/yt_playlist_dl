@@ -126,6 +126,17 @@ const app = createApp({
         clearQueue() {
             this.explicitQueue = []
             localStorage.setItem('audio.explicitQueue', JSON.stringify(this.explicitQueue));
+        },
+        shuffleQueue(videos) {
+            this.explicitQueue = [...videos];
+            for (let i = this.explicitQueue.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [this.explicitQueue[i], this.explicitQueue[j]] = [this.explicitQueue[j], this.explicitQueue[i]];
+            }
+        },
+        reverseQueue(videos) {
+            this.explicitQueue = [...videos];
+            this.explicitQueue.reverse();
         }
     },
     computed: {
