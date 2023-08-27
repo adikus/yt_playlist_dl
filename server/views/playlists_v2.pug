@@ -1,15 +1,18 @@
 extends layout
 
 block content
-    .fa.fa-caret-right.position-absolute.border-right.border-bottom.px-2.d-md-none.sidebar-open(@click="openSidebar")
-    .d-md-flex.flex-md-row.mt-md-4
-        .flex-md-shrink-0.mr-md-4.border.rounded.p-3.bg-white.sticky-top.max-h-sticky-col.left-playlists-sidebar(:class='{ "shown": sidebarOpen }')
-            .fa.fa-caret-left.position-absolute.border-left.border-bottom.px-2.d-md-none.sidebar-close(@click="closeSidebar")
-            selected-item(:playlist="selectedPlaylist", :video="selectedVideo", :playing-video="playingVideo", :playing="playing", @selected-video="selectVideo", @play-video="playVideo" @enqueue="enqueue")
-            .mt-4.pt-4.border-top.border-dark
-                queue(:playing-video="playingVideo", :playing="playing", :implicit-queue="implicitQueue", :explicit-queue="explicitQueue", @play-video="playVideo", @update-queue="updateQueue($event)")
-        .flex-grow-1.border.rounded.p-3.bg-white.main-playlists-container
-            playlists(@selected-playlist="selectPlaylist", @selected-video="selectVideo")
+    .sliding-container
+        .d-flex.flex-row.mt-md-4.playlists-container(:class='{ "sidebar-shown": sidebarOpen }')
+            .flex-md-shrink-0.mr-md-4.border.rounded.bg-white.sticky-top.max-h-sticky-col.left-playlists-sidebar
+                .fa.fa-caret-left.position-absolute.border-left.border-bottom.px-2.d-md-none.sidebar-close(@click="closeSidebar")
+                .p-3
+                    selected-item(:playlist="selectedPlaylist", :video="selectedVideo", :playing-video="playingVideo", :playing="playing", @selected-video="selectVideo", @play-video="playVideo" @enqueue="enqueue")
+                    .mt-4.pt-4.border-top.border-dark
+                        queue(:playing-video="playingVideo", :playing="playing", :implicit-queue="implicitQueue", :explicit-queue="explicitQueue", @play-video="playVideo", @update-queue="updateQueue($event)")
+            .flex-grow-1.border.rounded.bg-white.main-playlists-container
+                .fa.fa-caret-right.sticky-top.border-right.border-bottom.px-2.d-md-none.sidebar-open(@click="openSidebar")
+                .p-3
+                    playlists(@selected-playlist="selectPlaylist", @selected-video="selectVideo")
 
 block footer
     footer.bg-white.footer(v-if="playingVideo")

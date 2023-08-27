@@ -39,26 +39,40 @@ main.container-fluid {
 }
 
 .max-h-sticky-col {
-    @media (min-width: 768px) {
-        max-height: calc(100vh - 60px - 70px);
-        overflow-y: auto;
+    max-height: calc(100vh - 60px - 70px);
+    overflow-y: auto;
+
+    @media (max-width: 768px) {
+        max-height: calc(100vh - 60px);
+    }
+}
+
+.sliding-container {
+    width: 100%;
+    overflow: hidden;
+}
+
+
+.playlists-container {
+    @media (max-width: 768px) {
+        width: 200%;
+
+        transform: translateX(-50%);
+        transition: all 0.3s ease-in-out;
+
+        &.sidebar-shown {
+            transform: translateX(0%);
+        }
     }
 }
 
 .left-playlists-sidebar {
     width: 40%;
     max-width: 520px;
+    top: 0;
 
     @media (max-width: 768px) {
         width: 100%;
-        transform: translateX(-100%);
-        transition: all 0.3s ease-in-out;
-        z-index: -1;
-
-        &.shown {
-            transform: none;
-            z-index: 1000;
-        }
     }
 }
 
@@ -67,7 +81,6 @@ main.container-fluid {
     height: 30px;
     font-size: 2em;
     display: block;
-    left: 0;
     top: 0;
     background: white;
     border-bottom-right-radius: 10px;
@@ -89,8 +102,7 @@ main.container-fluid {
     min-width: 300px;
 
     @media (max-width: 768px) {
-        position: absolute;
-        top: 0;
+        width: 100%;
     }
 }
 
