@@ -1,17 +1,17 @@
 <template>
     <div class="d-flex flex-row justify-content-between px-1 mb-1">
-        <a href="#" @click.prevent="$emit('shuffleQueue', queue)">
+        <a href="#" @click.prevent="shuffleQueue()">
             <i class="fa fa-random mx-1"></i> Shuffle
         </a>
-        <a href="#" @click.prevent="$emit('reverseQueue', queue)">
+        <a href="#" @click.prevent="reverseQueue()">
             <i class="fa fa-arrows-v mx-1"></i> Reverse
         </a>
-        <a href="#" class="text-danger" :disabled="!explicitQueue.length" @click.prevent="$emit('clearQueue')">
+        <a href="#" class="text-danger" :disabled="!explicitQueue.length" @click.prevent="clearQueue()">
             <i class="fa fa-times-circle-o mx-1"></i> Clear queue
         </a>
     </div>
     <div
-        class="pointer border-right border-left border-bottom p-1 bg-light text-truncate"
+        class="pointer border-right border-left border-bottom px-2 py-1 bg-light text-truncate d-flex flex-row align-items-center"
         v-for="(video, index) in queue"
         @click.prevent="$emit('playVideo', video)"
         :class='{ "border-top": index === 0, "rounded-top": index === 0, "rounded-bottom": index === queue.length - 1 }'
@@ -22,19 +22,41 @@
             <span/>
         </div>
         <span v-else class="d-inline-block w-15px mx-1">&nbsp;</span>
-        {{video.title}}
+        <span class="flex-grow-1">{{video.title}}</span>
+        <i class="fa fa-trash mx-1 flex-shrink-1 on-parent-hover" @click.stop.prevent="removeFromQueue(video)"></i>
     </div>
 </template>
 
 <script>
     export default {
         props: ['playingVideo', 'playing', 'explicitQueue', 'implicitQueue'],
-        emits: ['playVideo', 'clearQueue', 'shuffleQueue', 'reverseQueue'],
+        emits: ['playVideo', 'updateQueue'],
         computed: {
             queue() {
                 if (this.explicitQueue.length) return this.explicitQueue
 
                 return this.implicitQueue;
+            }
+        },
+        methods: {
+            clearQueue() {
+                this.$emit('updateQueue', [])
+            },
+            shuffleQueue() {
+                const explicitQueue = [...this.queue];
+                for (let i = explicitQueue.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [explicitQueue[i], explicitQueue[j]] = [explicitQueue[j], explicitQueue[i]];
+                }
+                this.$emit('updateQueue', explicitQueue)
+            },
+            reverseQueue() {
+                const explicitQueue = [...this.queue];
+                explicitQueue.reverse();
+                this.$emit('updateQueue', explicitQueue)
+            },
+            removeFromQueue(video) {
+                this.$emit('updateQueue', this.queue.filter((v) => v.id !== video.id))
             }
         }
     };
@@ -46,6 +68,28 @@
 }
 .pointer {
     cursor: pointer;
+}
+.flex-grow-1 {
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.flex-shrink-1 {
+    flex-shrink: 1;
+}
+div {
+    &> .on-parent-hover {
+        display: none;
+        color: grey;
+    }
+    &:hover > .on-parent-hover {
+        display: inline-block;
+
+        &:hover {
+            color: #dc3545;
+        }
+    }
 }
 a[disabled="true"] {
     color: grey !important;
