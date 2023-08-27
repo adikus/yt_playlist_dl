@@ -1,14 +1,14 @@
 <template>
     <div>
         <vue-audio
-            :play="play"
-            :position="position"
+            :play="!loading && playing"
             :filename="filename"
             :volume="volume"
+            :position="position"
+            @update:position="updatePosition($event)"
             @loading:ready="loadingReady"
             @playback:end="playbackEnded"
-            @playback:failed="playbackFailed"
-            @position:update="updatePosition">
+            @playback:failed="playbackFailed">
         </vue-audio>
         <vue-slider
             class="time-slider"
@@ -23,8 +23,8 @@
             @drag-start="draggingSlider=true"
             @drag-end="draggingSlider=false; setPosition()"
         ></vue-slider>
-        <i class="fa fa-play mr-2 playback-control" v-if="!play" @click="setPlay"></i>
-        <i class="fa fa-pause mr-2 playback-control" v-if="play" @click="setPause"></i>
+        <i class="fa fa-play mr-2 playback-control" v-if="!playing" @click="setPlay"></i>
+        <i class="fa fa-pause mr-2 playback-control" v-if="playing" @click="setPause"></i>
         {{minutes}}:{{seconds}}
         &nbsp; | &nbsp;
         {{title}}
@@ -43,11 +43,9 @@
     import 'vue-slider-component/theme/default.css'
 
     export default {
-        props: ['title', 'url'],
+        props: ['title', 'url', 'playing', 'position'],
         data () {
             return {
-                play: false,
-                position: 0,
                 observedPosition: 0,
                 volume: 100,
                 backupVolume: 100,
@@ -70,87 +68,67 @@
             }
         },
         methods: {
-            loadingReady (duration) {
+            loadingReady(duration) {
                 console.log('Track loaded');
-                if (this.preparing) {
-                    this.preparing = false;
-                } else {
-                    this.play = true;
-                }
                 this.duration = Math.round(duration * 10) / 10;
                 this.loading = false;
-
-                if (navigator?.mediaSession?.setPositionState) {
-                    navigator.mediaSession.setPositionState({ duration: this.duration, playbackRate: 1, position: this.position });
-                }
+                this.$emit('update:duration', this.duration)
             },
-            playbackEnded () {
-                this.play = false;
+            playbackEnded() {
                 this.$emit('playback:end')
             },
-            playTrack () {
-                this.play = false;
-                this.filename = this.url;
-                this.position = 0;
-                this.loading = true;
-            },
-            prepareTrack () {
-                this.play = false;
+            playTrack() {
                 this.filename = this.url;
                 this.loading = true;
-                this.preparing = true;
             },
-            setPosition (position) {
+            prepareTrack() {
+                this.filename = this.url;
+                this.loading = true;
+            },
+            setPosition(position) {
                 if(!this.draggingSlider) {
                     if(position === undefined){
-                        this.position = this.observedPosition;
+                        this.$emit('update:position', this.observedPosition);
                     } else {
-                        this.position = position;
-                    }
-
-                    if (navigator?.mediaSession?.setPositionState) {
-                        navigator.mediaSession.setPositionState({ duration: this.duration, playbackRate: 1, position: this.position || 0 });
+                        this.$emit('update:position', position);
                     }
                 } else {
                     this.setObservedPosition(position);
                 }
             },
-            updatePosition (position) {
-                if(!this.draggingSlider) {
-                   this.setObservedPosition(position);
+            updatePosition(position) {
+                this.$emit('update:position', position);
 
-                    if (navigator?.mediaSession?.setPositionState) {
-                        navigator.mediaSession.setPositionState({ duration: this.duration, playbackRate: 1, position: position || 0 });
-                    }
+                if(!this.draggingSlider && position !== null) {
+                    this.setObservedPosition(position);
                 }
-                this.position = null;
             },
-            setObservedPosition (position) {
+            setObservedPosition(position) {
                 this.observedPosition = position;
 
                 this.seconds = this.formatTime(Math.floor(this.observedPosition % 60));
                 this.minutes = this.formatTime(Math.floor(this.observedPosition / 60));
             },
-            formatTime (n) {
+            formatTime(n) {
                 return n > 99 ? ('0' + n).slice(-3) : ('0' + n).slice(-2);
             },
-            setPlay () {
+            setPlay() {
                 if(this.playFailed){
                     // Workaround for mobile requiring the play() to be initiated  by gesture
                     // TODO: autodetect mobile?
                     window.audioTag.play();
                     this.playFailed = false;
                 }
-                this.play = true;
+                this.$emit('update:playing', true);
             },
-            setPause () {
-                this.play = false;
+            setPause() {
+                this.$emit('update:playing', false);
             },
-            playbackFailed () {
+            playbackFailed() {
                 this.playFailed = true;
-                this.play = false;
+                this.$emit('update:playing', false);
             },
-            toggleMute () {
+            toggleMute() {
                 if (this.volume === 0) {
                     this.volume = this.backupVolume;
                 } else {
@@ -160,16 +138,13 @@
             }
         },
         watch: {
-            url (newUrl) {
+            url(newUrl) {
                 if(newUrl !== null){
                     this.playTrack();
                 }
             },
-            volume (volume) {
+            volume(volume) {
                 localStorage.setItem('volume', volume);
-            },
-            play(play) {
-                this.$emit('changedState', { playing: play });
             }
         },
         components: {

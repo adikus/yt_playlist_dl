@@ -47,6 +47,6 @@ block bodyScripts
     script window.vueData = { videos: !{videosString} };
 
 block footer
-    footer.footer(v-if="title")
+    footer.footer(v-if="playingVideo")
         .container-fluid
-            audio-controller(:title="title", :url="url", @play="url=null" @playback:end="playbackEnded")
+            audio-controller(:title="playingVideo.title", :url="videoUrl", :playing="playing" v-model:position="position" @update:duration="duration = $event" @update:playing="updatePlaying($event)" @playback:end="playbackEnded")

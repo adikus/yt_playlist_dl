@@ -3,17 +3,17 @@ extends layout
 block content
     .d-flex.flex-row.mt-4
         .flex-shrink-0.border.rounded.p-3.bg-white.sticky-top.max-h-sticky-col.left-playlists-sidebar.mr-4
-            selected-item(:playlist="selectedPlaylist", :video="selectedVideo", :playing-title="title", :playing="playing", @selected-video="selectVideo", @play-video="playVideo")
+            selected-item(:playlist="selectedPlaylist", :video="selectedVideo", :playing-video="playingVideo", :playing="playing", @selected-video="selectVideo", @play-video="playVideo")
             .mt-4.pt-4.border-top.border-dark
-                queue-controller(:title="title", :playing="playing", @play-video="playVideo")
+                queue-controller(:playing-video="playingVideo", :playing="playing", @play-video="playVideo")
         .flex-grow-1.border.rounded.p-3.bg-white.main-playlists-container
             playlists(@selected-playlist="selectPlaylist", @selected-video="selectVideo")
 
 
 
 block footer
-    footer.bg-white.footer(v-if="title")
+    footer.bg-white.footer(v-if="playingVideo")
         .container-fluid
-            audio-controller(ref="audioController", :title="title", :url="url", @play="url=null" @changed-state="playbackChangedState" @playback:end="playbackEnded")
+            audio-controller(:title="playingVideo.title", :url="videoUrl", :playing="playing" v-model:position="position" @update:duration="duration = $event" @update:playing="updatePlaying($event)" @playback:end="playbackEnded")
 
 

@@ -5,6 +5,11 @@
 <script>
     export default {
         props: ['play', 'position', 'filename', 'volume'],
+        data() {
+            return {
+                localPosition: null
+            }
+        },
         mounted () {
             window.audioTag = this.tag = this.$el;
 
@@ -15,14 +20,8 @@
             this.tag.onended = () => this.$emit('playback:end');
             this.tag.oncanplay = () => this.$emit('loading:ready', this.tag.duration);
             this.tag.ontimeupdate = () => {
-                this.$emit('position:update', this.tag.currentTime);
-                localStorage.setItem('audio.position', this.tag.currentTime);
-            }
-
-            if (localStorage.getItem('audio.position')) {
-                setTimeout(() => {
-                    this.tag.currentTime = parseFloat(localStorage.getItem('audio.position')) || 0;
-                }, 50);
+                this.localPosition = this.tag.currentTime
+                this.$emit('update:position', this.localPosition);
             }
         },
         watch: {
@@ -33,11 +32,12 @@
                 }
             },
             position (newPosition) {
-                if(newPosition !== null) {
-                    this.tag.currentTime = parseFloat(newPosition) || 0;
+                if(newPosition !== null && newPosition !== this.localPosition) {
+                    this.localPosition = newPosition;
+                    this.tag.currentTime = this.localPosition
                 }
             },
-            play (shouldPlay) {
+            play(shouldPlay) {
                 if(shouldPlay){
                     this.tag.play().catch(err => {
                         console.error(err);
@@ -47,7 +47,7 @@
                     this.tag.pause();
                 }
             },
-            volume (volume) {
+            volume(volume) {
                 this.tag.volume = volume / 100.0;
             }
         }

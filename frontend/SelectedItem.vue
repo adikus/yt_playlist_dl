@@ -1,18 +1,18 @@
 <template lang="pug">
 template(v-if="video")
-        img.thumbnail.mr-2.w-100(v-lazy="video.metadata.thumbnails.maxres?.url || video.metadata.thumbnails.high.url")
+        img.thumbnail.mr-2.w-100(v-if="videoThumbnail", v-lazy="videoThumbnail")
         a.mt-1.d-inline-block(href='#', v-if="playlist", @click.prevent="$emit('selectedVideo', null)") &lt; {{playlist.title}}
         h2.mt-2 {{video.title}}
 
         .d-flex.flex-row.flex-wrap
             .badge.badge-dark.mr-2 {{video.channel}}
-            .badge.badge-light.mr-2 {{video.playlistVideo.status}}
-            .badge.badge-light.mr-2 {{video.playlistVideo.created_at}}
+            .badge.badge-light.mr-2 {{video.playlistVideo?.status}}
+            .badge.badge-light.mr-2 {{video.playlistVideo?.created_at}}
             .badge.badge-success.mr-2(v-if="video.originalUpload?.url") Uploaded
             .badge.badge-success.mr-2(v-if="video.mp3Upload?.url") Converted
 
         .d-flex.flex-row.justify-content-between.mt-3
-            a.btn.btn-primary(href='#', v-if="video.title === playingTitle && playing", @click.prevent="$emit('playVideo', video)")
+            a.btn.btn-primary(href='#', v-if="video.id === playingVideo?.id && playing", @click.prevent="$emit('playVideo', video)")
                 span.fa.fa-pause.mr-1
                 | Pause
             a.btn.btn-primary(href='#', v-else, @click.prevent="$emit('playVideo', video)")
@@ -21,7 +21,7 @@ template(v-if="video")
 
 
 template(v-else-if="playlist")
-    img.thumbnail.mr-2.w-100(v-lazy="playlist.metadata.thumbnails.maxres.url")
+    img.thumbnail.mr-2.w-100(v-lazy="playlist.metadata?.thumbnails?.maxres?.url")
     h2 {{playlist.title}}
     .badge.badge-light.mr-2 {{playlist.status}}
     .badge.badge-light.mr-2 {{playlist.created_at}}
@@ -49,7 +49,7 @@ template(v-else-if="playlist")
 import Spinner from "./Spinner.vue";
 
 export default {
-    props: ['playlist', 'video', 'playingTitle', 'playing'],
+    props: ['playlist', 'video', 'playingVideo', 'playing'],
     components: { Spinner },
     data() {
         return {
@@ -85,6 +85,11 @@ export default {
                 if (oldPlaylist) oldPlaylist.shownVideos = [];
             }
         }
+    },
+    computed: {
+      videoThumbnail() {
+          return this.video?.metadata?.thumbnails.maxres?.url || this.video?.metadata?.thumbnails?.high?.url
+      }
     },
     methods: {
         async savePlaylist() {
