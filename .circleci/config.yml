@@ -38,7 +38,7 @@ jobs:
     steps:
       - checkout:
           path: ~/repo
-      - run: npm -g install serverless serverless-plugin-git-variables
+      - run: npm -g install serverless@3.34.0 serverless-plugin-git-variables
       - run: npx sls deploy
 
 workflows:
