@@ -22,7 +22,7 @@ module.exports = shipit => {
     });
 
     shipit.blTask('copy_data', async () => {
-        await shipit.remote(`cd ${shipit.releasePath}/data; rm ./*.json; ln -s ../../../config/data/* ./`);
+        await shipit.remote(`cd ${shipit.releasePath}/data; rm ./*.json; cp ./../../../config/data/*.json ./`);
     });
 
     shipit.blTask('restart_docker', async () => {
