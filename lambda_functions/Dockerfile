@@ -1,6 +1,9 @@
-FROM public.ecr.aws/lambda/nodejs:20
+FROM public.ecr.aws/lambda/python:3.12
 
-RUN dnf install -y python3 wget tar xz
+# Install Node.js 20
+RUN dnf install -y wget tar xz && \
+    curl -fsSL https://rpm.nodesource.com/setup_20.x | bash - && \
+    dnf install -y nodejs
 
 RUN wget https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz && \
     tar -xf ffmpeg-release-amd64-static.tar.xz && \
@@ -20,10 +23,8 @@ RUN npm ci --omit=dev
 
 RUN python3 --version
 
-# https://github.com/amazonlinux/amazon-linux-2023/issues/625#issuecomment-1924864568
-RUN cp /usr/lib64/libssl.so.3 /var/lang/lib/libssl.so.3 && \
-    cp /usr/lib64/libcrypto.so.3 /var/lang/lib/libcrypto.so.3
-
 RUN /var/task/bin/yt-dlp --version
 
 COPY handler.js ./
+
+CMD [ "handler.handler" ]
