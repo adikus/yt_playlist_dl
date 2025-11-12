@@ -22,7 +22,10 @@ COPY package-lock.json ./
 
 RUN npm ci --omit=dev
 
-RUN python3 --version
+# https://github.com/amazonlinux/amazon-linux-2023/issues/625#issuecomment-1924864568
+RUN cp /usr/lib64/libssl.so.3 /var/lang/lib/libssl.so.3 && \
+    cp /usr/lib64/libcrypto.so.3 /var/lang/lib/libcrypto.so.3
+
 RUN python3.11 --version
 
 RUN /var/task/bin/yt-dlp --version
