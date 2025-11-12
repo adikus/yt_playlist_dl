@@ -22,14 +22,14 @@ async function execPromise(command) {
 }
 
 async function resolveYtInfo(id) {
-    let output = await execPromise(`${path.join(__dirname, 'bin', 'yt-dlp')} -j --cache-dir /tmp/yt -- ${id}`);
+    let output = await execPromise(`${path.join(__dirname, 'bin', 'yt-dlp')} --js-runtimes node -j --cache-dir /tmp/yt -- ${id}`);
     return JSON.parse(output);
 }
 
 function downloadYtTrack(id, format_id, error_callback) {
     let child = execFile(
         path.join(__dirname, 'bin', 'yt-dlp'),
-        ['-f', format_id, '--cache-dir', '/tmp/yt', '-o', '-', '--', id],
+        ['--js-runtimes node', '-f', format_id, '--cache-dir', '/tmp/yt', '-o', '-', '--', id],
         {cwd: '/tmp', maxBuffer: 1024 * 1024 * 1024, encoding: 'binary'},
         (err, stdout, stderr) => {
             if (err && error_callback) error_callback(err, stderr);
@@ -128,4 +128,3 @@ module.exports.convert = async function(event, context, callback) {
 
     callback(null, {key: params.dest_key});
 };
-
